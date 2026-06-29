@@ -1,0 +1,72 @@
+/**
+ * Languages offered in the Settings → Language picker. Mirrors the keyboard
+ * languages available on modern iOS/Android, labelled with their native
+ * (endonym) and English names. `tag` is the BCP-47 code stored in settings.
+ */
+export type Language = { tag: string; native: string; english: string };
+
+export const LANGUAGES: Language[] = [
+  { tag: 'en', native: 'English', english: 'English' },
+  { tag: 'es', native: 'Español', english: 'Spanish' },
+  { tag: 'pt-BR', native: 'Português (Brasil)', english: 'Portuguese (Brazil)' },
+  { tag: 'pt-PT', native: 'Português (Portugal)', english: 'Portuguese (Portugal)' },
+  { tag: 'fr', native: 'Français', english: 'French' },
+  { tag: 'de', native: 'Deutsch', english: 'German' },
+  { tag: 'it', native: 'Italiano', english: 'Italian' },
+  { tag: 'nl', native: 'Nederlands', english: 'Dutch' },
+  { tag: 'sv', native: 'Svenska', english: 'Swedish' },
+  { tag: 'da', native: 'Dansk', english: 'Danish' },
+  { tag: 'nb', native: 'Norsk bokmål', english: 'Norwegian' },
+  { tag: 'fi', native: 'Suomi', english: 'Finnish' },
+  { tag: 'is', native: 'Íslenska', english: 'Icelandic' },
+  { tag: 'pl', native: 'Polski', english: 'Polish' },
+  { tag: 'cs', native: 'Čeština', english: 'Czech' },
+  { tag: 'sk', native: 'Slovenčina', english: 'Slovak' },
+  { tag: 'hu', native: 'Magyar', english: 'Hungarian' },
+  { tag: 'ro', native: 'Română', english: 'Romanian' },
+  { tag: 'el', native: 'Ελληνικά', english: 'Greek' },
+  { tag: 'bg', native: 'Български', english: 'Bulgarian' },
+  { tag: 'uk', native: 'Українська', english: 'Ukrainian' },
+  { tag: 'ru', native: 'Русский', english: 'Russian' },
+  { tag: 'sr', native: 'Српски', english: 'Serbian' },
+  { tag: 'hr', native: 'Hrvatski', english: 'Croatian' },
+  { tag: 'sl', native: 'Slovenščina', english: 'Slovenian' },
+  { tag: 'lt', native: 'Lietuvių', english: 'Lithuanian' },
+  { tag: 'lv', native: 'Latviešu', english: 'Latvian' },
+  { tag: 'et', native: 'Eesti', english: 'Estonian' },
+  { tag: 'tr', native: 'Türkçe', english: 'Turkish' },
+  { tag: 'ar', native: 'العربية', english: 'Arabic' },
+  { tag: 'he', native: 'עברית', english: 'Hebrew' },
+  { tag: 'fa', native: 'فارسی', english: 'Persian' },
+  { tag: 'ur', native: 'اردو', english: 'Urdu' },
+  { tag: 'hi', native: 'हिन्दी', english: 'Hindi' },
+  { tag: 'bn', native: 'বাংলা', english: 'Bengali' },
+  { tag: 'pa', native: 'ਪੰਜਾਬੀ', english: 'Punjabi' },
+  { tag: 'gu', native: 'ગુજરાતી', english: 'Gujarati' },
+  { tag: 'ta', native: 'தமிழ்', english: 'Tamil' },
+  { tag: 'te', native: 'తెలుగు', english: 'Telugu' },
+  { tag: 'kn', native: 'ಕನ್ನಡ', english: 'Kannada' },
+  { tag: 'ml', native: 'മലയാളം', english: 'Malayalam' },
+  { tag: 'mr', native: 'मराठी', english: 'Marathi' },
+  { tag: 'th', native: 'ไทย', english: 'Thai' },
+  { tag: 'vi', native: 'Tiếng Việt', english: 'Vietnamese' },
+  { tag: 'id', native: 'Bahasa Indonesia', english: 'Indonesian' },
+  { tag: 'ms', native: 'Bahasa Melayu', english: 'Malay' },
+  { tag: 'fil', native: 'Filipino', english: 'Filipino' },
+  { tag: 'km', native: 'ខ្មែរ', english: 'Khmer' },
+  { tag: 'lo', native: 'ລາວ', english: 'Lao' },
+  { tag: 'my', native: 'မြန်မာ', english: 'Burmese' },
+  { tag: 'zh-Hans', native: '简体中文', english: 'Chinese (Simplified)' },
+  { tag: 'zh-Hant', native: '繁體中文', english: 'Chinese (Traditional)' },
+  { tag: 'ja', native: '日本語', english: 'Japanese' },
+  { tag: 'ko', native: '한국어', english: 'Korean' },
+  { tag: 'ca', native: 'Català', english: 'Catalan' },
+  { tag: 'eu', native: 'Euskara', english: 'Basque' },
+  { tag: 'gl', native: 'Galego', english: 'Galician' },
+  { tag: 'af', native: 'Afrikaans', english: 'Afrikaans' },
+  { tag: 'sw', native: 'Kiswahili', english: 'Swahili' },
+];
+
+export function languageLabel(tag: string): string {
+  return LANGUAGES.find((language) => language.tag === tag)?.native ?? tag;
+}
