@@ -13,6 +13,7 @@ export const en: Messages = {
   },
   common: {
     settings: 'Settings',
+    streakLabel: '{n} day streak',
   },
   tabs: {
     home: 'Home',
@@ -63,8 +64,13 @@ export const en: Messages = {
     calibrated: 'calibrated ✓',
     notScored: 'not scored',
     yourScore: 'Your skin score',
-    savedNote:
-      'Saved. Open the Progress tab to see your trend and build a time-lapse. Scores are image-derived indicators, not clinical measurements.',
+    scoreDeltaUp: '+{delta} pts vs last scan',
+    scoreDeltaDown: '−{delta} pts vs last scan',
+    scoreDeltaEqual: 'Same as last scan',
+    scoreFirst: 'First scan — baseline set.',
+    disclaimerNote:
+      'Relative indicator tracked against your own baseline — not a clinical measurement.',
+    savedNote: 'Saved to your progress timeline.',
     beforeScan: 'Before you scan',
     normalizeNote:
       'Normalizing capture conditions reduces day-to-day noise — it doesn’t eliminate it entirely.',
@@ -152,6 +158,8 @@ export const en: Messages = {
     found: '{n} found',
     noMatch:
       'No known ingredients matched. The text may be blurry — retake the shot or paste the list below.',
+    summary: '{actives} key actives · {concerns} flagged',
+    summaryClear: '{actives} key actives · none flagged',
     keyActives: 'Key actives',
     baseSupport: 'Base & support',
     pasteTitle: 'Paste a list instead',
@@ -170,6 +178,12 @@ export const en: Messages = {
     scanToPopulate: 'Scan your face on the Skin Scan tab to populate your scores.',
     indicatorsNote:
       'These are image-derived indicators, not clinical or diagnostic measurements. Scan a few days in a row to build a trend.',
+    insightTitle: 'What your data says',
+    insightImproved: 'Your overall score improved {delta} pts over your last {n} scans.',
+    insightDeclined: 'Your score dipped {delta} pts over your last {n} scans — check your routine adherence.',
+    insightStable: 'Holding steady across your last {n} scans. Consistency is working.',
+    insightFirst: 'Scan a few more days to start seeing your trend here.',
+    insightAdherence: 'Routine streak: {streak} days.',
     timelapseTitle: 'Before / after time-lapse',
     rangeWeekly: 'Weekly',
     rangeMonthly: 'Monthly',

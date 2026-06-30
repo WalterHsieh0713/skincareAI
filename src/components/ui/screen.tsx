@@ -1,10 +1,11 @@
 import { Link } from 'expo-router';
-import { Platform, Pressable, ScrollView, StyleSheet, type ViewStyle } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useRoutine } from '@/hooks/use-routine';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -15,12 +16,32 @@ type ScreenProps = {
   contentStyle?: ViewStyle;
   /** Hide the in-page title block (e.g. when a native header already shows it). */
   hideHeader?: boolean;
-  /** Show the Settings toolbar button in the header. Defaults to true. */
-  showSettings?: boolean;
+  /** Show the streak badge in the header. Defaults to true. */
+  showStreak?: boolean;
 };
 
-/** Top-row toolbar action that opens the Settings page. */
-function SettingsButton() {
+/** Flame streak badge — shows current consecutive-day routine streak, links to /routine. */
+function StreakBadge() {
+  const { streak } = useRoutine();
+  const { t } = useTranslation();
+  return (
+    <Link href="/routine" asChild>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('common.streakLabel', { n: streak })}
+        hitSlop={Spacing.two}
+        style={({ pressed }) => [pressed && styles.pressed]}>
+        <ThemedView type="backgroundElement" style={styles.streakBadge}>
+          <ThemedText type="smallBold">🔥</ThemedText>
+          <ThemedText type="smallBold">{streak}</ThemedText>
+        </ThemedView>
+      </Pressable>
+    </Link>
+  );
+}
+
+/** Compact gear icon that opens the Settings page. */
+function SettingsGear() {
   const { t } = useTranslation();
   return (
     <Link href="/settings" asChild>
@@ -29,10 +50,7 @@ function SettingsButton() {
         accessibilityLabel={t('common.settings')}
         hitSlop={Spacing.two}
         style={({ pressed }) => [pressed && styles.pressed]}>
-        <ThemedView type="backgroundElement" style={styles.settingsButton}>
-          <ThemedText type="smallBold">⚙</ThemedText>
-          <ThemedText type="smallBold">{t('common.settings')}</ThemedText>
-        </ThemedView>
+        <ThemedText type="smallBold" style={styles.gearIcon}>⚙</ThemedText>
       </Pressable>
     </Link>
   );
@@ -49,7 +67,7 @@ export function Screen({
   children,
   contentStyle,
   hideHeader = false,
-  showSettings = true,
+  showStreak = true,
 }: ScreenProps) {
   const safeAreaInsets = useSafeAreaInsets();
   const theme = useTheme();
@@ -87,7 +105,10 @@ export function Screen({
               <ThemedText type="subtitle" style={styles.headerTitle}>
                 {title}
               </ThemedText>
-              {showSettings ? <SettingsButton /> : null}
+              <View style={styles.headerActions}>
+                {showStreak ? <StreakBadge /> : null}
+                <SettingsGear />
+              </View>
             </ThemedView>
             {subtitle ? (
               <ThemedText themeColor="textSecondary">{subtitle}</ThemedText>
@@ -128,13 +149,22 @@ const styles = StyleSheet.create({
   headerTitle: {
     flexShrink: 1,
   },
-  settingsButton: {
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.one,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.three,
     borderRadius: Spacing.five,
+  },
+  gearIcon: {
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.two,
   },
   pressed: {
     opacity: 0.7,

@@ -54,6 +54,12 @@ export default function IngredientsScreen() {
 
   const actives = results?.filter((item) => item.active) ?? [];
   const others = results?.filter((item) => !item.active) ?? [];
+  const concerns = results?.filter((item) => item.concern) ?? [];
+  const summaryText = results && results.length > 0
+    ? concerns.length > 0
+      ? t('ingredients.summary', { actives: actives.length, concerns: concerns.length })
+      : t('ingredients.summaryClear', { actives: actives.length })
+    : null;
 
   return (
     <Screen title={t('ingredients.title')} subtitle={t('ingredients.subtitle')}>
@@ -99,8 +105,16 @@ export default function IngredientsScreen() {
             </ThemedText>
           ) : null}
 
+          {summaryText ? (
+            <ThemedView type="backgroundElement" style={styles.summaryBar}>
+              <ThemedText type="smallBold">{summaryText}</ThemedText>
+            </ThemedView>
+          ) : null}
+
           {actives.length > 0 ? (
-            <ThemedText type="smallBold">{t('ingredients.keyActives')}</ThemedText>
+            <ThemedText type="smallBold" style={summaryText ? styles.sectionGap : undefined}>
+              {t('ingredients.keyActives')}
+            </ThemedText>
           ) : null}
           {actives.map((item) => (
             <IngredientRow key={item.name} ingredient={item} />
@@ -172,6 +186,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  summaryBar: {
+    borderRadius: Spacing.two,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.three,
   },
   sectionGap: {
     marginTop: Spacing.two,

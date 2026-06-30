@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
+import { useScans } from '@/hooks/use-scans';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { calibrateScan } from '@/lib/scan-calibration';
@@ -34,13 +35,18 @@ const ISSUE_PRIORITY: ScanQualityIssue[] = [
 ];
 
 export default function ScanScreen() {
+  const scans = useScans();
   const theme = useTheme();
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [scores, setScores] = useState<SkinScores | null>(null);
   const [quality, setQuality] = useState<ScanQuality | null>(null);
+  // Snapshot the previous overall score before the scan is added to the store.
+  const [prevScore, setPrevScore] = useState<number | null>(null);
 
   const handleCapture = useCallback(async (dataUrl: string) => {
+    // Capture the baseline before this scan is saved so the delta is meaningful.
+    setPrevScore(scans.length > 0 ? scans[scans.length - 1].scores.overall : null);
     setBusy(true);
     setScores(null);
     setQuality(null);
@@ -70,12 +76,23 @@ export default function ScanScreen() {
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [scans]);
 
   // Localized coaching for the most important issue (derived, not from the lib).
   const worstIssue = quality
     ? ISSUE_PRIORITY.find((issue) => quality.issues.includes(issue))
     : undefined;
+
+  // Delta label for the score reveal — compare against the scan that existed before this capture.
+  const deltaLabel = scores
+    ? prevScore === null
+      ? t('scan.scoreFirst')
+      : scores.overall === prevScore
+        ? t('scan.scoreDeltaEqual')
+        : scores.overall > prevScore
+          ? t('scan.scoreDeltaUp', { delta: scores.overall - prevScore })
+          : t('scan.scoreDeltaDown', { delta: prevScore - scores.overall })
+    : null;
 
   return (
     <Screen title={t('scan.title')} subtitle={t('scan.subtitle')}>
@@ -121,6 +138,14 @@ export default function ScanScreen() {
       {scores && !busy ? (
         <Card title={t('scan.yourScore')} hint={t('scan.calibrated')}>
           <SkinScoreView scores={scores} />
+          {deltaLabel ? (
+            <View style={styles.deltaRow}>
+              <ThemedText type="smallBold">{deltaLabel}</ThemedText>
+            </View>
+          ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            {t('scan.disclaimerNote')}
+          </ThemedText>
           {quality ? (
             <ThemedText type="small" themeColor="textSecondary">
               {t('scan.passedValidation', {
@@ -161,6 +186,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  deltaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   guideList: {
     gap: Spacing.two,

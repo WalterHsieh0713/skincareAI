@@ -15,8 +15,34 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { isRangeUnlocked } from '@/lib/routine';
 import { clearScans } from '@/lib/scan-store';
+import type { Scan } from '@/lib/scan-types';
 import { formatDayKey, RANGE_DAYS, type TimelapseRange } from '@/lib/scan-types';
 import { buildTimelapse, periodCount, periodLabel } from '@/lib/timelapse';
+
+const INSIGHT_WINDOW = 7;
+
+function buildInsight(
+  scans: Scan[],
+  streak: number,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  if (scans.length < 3) {
+    return t('progress.insightFirst');
+  }
+  const recent = scans.slice(-Math.min(INSIGHT_WINDOW, scans.length));
+  const first = recent[0].scores.overall;
+  const last = recent[recent.length - 1].scores.overall;
+  const delta = last - first;
+  const n = recent.length;
+  const adherence = streak > 0 ? ` ${t('progress.insightAdherence', { streak })}` : '';
+  if (Math.abs(delta) <= 1) {
+    return t('progress.insightStable', { n }) + adherence;
+  }
+  if (delta > 0) {
+    return t('progress.insightImproved', { delta, n }) + adherence;
+  }
+  return t('progress.insightDeclined', { delta: Math.abs(delta), n }) + adherence;
+}
 
 const RANGES: TimelapseRange[] = ['weekly', 'monthly'];
 const FRAME_MS = 600;
@@ -31,6 +57,7 @@ export default function ProgressScreen() {
   const { streak } = useRoutine();
   const { t, tn } = useTranslation();
   const latest = scans.length > 0 ? scans[scans.length - 1] : null;
+  const insight = buildInsight(scans, streak, t);
 
   const [range, setRange] = useState<TimelapseRange>('weekly');
   const rangeUnlocked = isRangeUnlocked(range, streak);
@@ -91,6 +118,10 @@ export default function ProgressScreen() {
         <ThemedText type="small" themeColor="textSecondary">
           {t('progress.indicatorsNote')}
         </ThemedText>
+      </Card>
+
+      <Card title={t('progress.insightTitle')}>
+        <ThemedText>{insight}</ThemedText>
       </Card>
 
       <Card title={t('progress.timelapseTitle')}>
@@ -186,20 +217,20 @@ function PeriodNav({
         disabled={!canGoBack}
         style={[styles.arrow, !canGoBack && styles.arrowDisabled]}>
         <ThemedText
-          type="defaultBold"
+          type="smallBold"
           themeColor={canGoBack ? 'text' : 'textSecondary'}>
           ‹
         </ThemedText>
       </Pressable>
       <ThemedView type="backgroundElement" style={styles.periodLabel}>
-        <ThemedText type="defaultBold">{label}</ThemedText>
+        <ThemedText type="smallBold">{label}</ThemedText>
       </ThemedView>
       <Pressable
         onPress={onForward}
         disabled={!canGoForward}
         style={[styles.arrow, !canGoForward && styles.arrowDisabled]}>
         <ThemedText
-          type="defaultBold"
+          type="smallBold"
           themeColor={canGoForward ? 'text' : 'textSecondary'}>
           ›
         </ThemedText>
