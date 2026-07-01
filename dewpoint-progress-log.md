@@ -9,6 +9,10 @@ metadata:
 
 Running progress log for the Dewpoint skincare app.
 
+**2026-06-30:**
+- Pushed the full Dewpoint folder to the shared GitHub repo `WalterHsieh0713/skincareAI` (merged with the existing placeholder README rather than overwriting it).
+- Set up a PostToolUse hook (`.claude/settings.json`) so every future save to this progress log is automatically committed and pushed to `origin/main` on that repo — no manual push needed going forward.
+
 **2026-06-27:**
 - Got the app running in a browser for the first time — started the Expo web dev server (`npx expo start --web`) in `C:\Users\sean\Desktop\Claude\Dewpoint` and opened it in Chrome at `http://localhost:8081`. (First guess of dewpoint.app was wrong — it's a local dev server only.) See [[dewpoint-launch-local]] for the launch steps.
 - Moved the memory files out of Claude Code's hidden built-in memory folder (`.claude\projects\...\memory\`) into the project root: `MEMORY.md`, `dewpoint-launch-local.md`, `dewpoint-progress-log.md`.
