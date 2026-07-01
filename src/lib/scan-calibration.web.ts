@@ -21,7 +21,7 @@ import type {
  */
 
 // --- Calibration constants (tuned against the canvas pipeline at WORK px) ---
-export const WORK = 256; // analysis resolution — fast, enough for stats
+const WORK = 256; // analysis resolution — fast, enough for stats
 const MAX_OUT = 1024; // cap stored/scored image so calibration stays cheap
 
 // Validation thresholds. Each maps directly to one ScanQualityIssue.
@@ -48,7 +48,7 @@ const GUIDANCE: Record<ScanQualityIssue, string> = {
 };
 
 // Issues are reported worst-first so the UI can coach the single best fix.
-export const ISSUE_PRIORITY: ScanQualityIssue[] = [
+const ISSUE_PRIORITY: ScanQualityIssue[] = [
   'no-face',
   'blurry',
   'too-dark',
@@ -193,14 +193,9 @@ function validate(metrics: ScanMetrics): ScanQuality {
   };
 }
 
-/**
- * Assess capture quality from a raw frame's pixel data (RGBA, `n`×`n`).
- * Shared by the post-capture calibration pipeline below and the live
- * in-viewfinder feedback loop in `CameraCapture`, so both judge frames the
- * same way.
- */
-export function assessQuality(data: Uint8ClampedArray, n: number): ScanQuality {
-  const face = detectFace(data, n);
+/** Pure pixel-in, verdict-out — shared by calibrateScan() and the live preview loop. */
+export function assessFrame(raw: Uint8ClampedArray, n: number): ScanQuality {
+  const face = detectFace(raw, n);
   const faceFill = face.count / (n * n);
   const centerOffset = face.count
     ? Math.min(1, Math.hypot(face.cx - 0.5, face.cy - 0.5) / 0.5)
@@ -211,9 +206,31 @@ export function assessQuality(data: Uint8ClampedArray, n: number): ScanQuality {
     centerOffset,
     brightness,
     evenness: evennessFrom(face),
-    sharpness: laplacianVariance(data, n),
+    sharpness: laplacianVariance(raw, n),
   };
   return validate(metrics);
+}
+
+// Reused across ticks so the live preview loop doesn't allocate a canvas ~3x/sec.
+let liveCanvas: HTMLCanvasElement | null = null;
+let liveCtx: CanvasRenderingContext2D | null = null;
+
+/** Draws the current square-cropped video frame at WORK resolution and assesses it. */
+export function assessVideoFrame(video: HTMLVideoElement): ScanQuality {
+  if (!liveCanvas) {
+    liveCanvas = document.createElement('canvas');
+    liveCanvas.width = WORK;
+    liveCanvas.height = WORK;
+    liveCtx = liveCanvas.getContext('2d', { willReadFrequently: true });
+  }
+  if (!liveCtx || !video.videoWidth || !video.videoHeight) {
+    return validate({ faceFill: 0, centerOffset: 1, brightness: 0, evenness: 0, sharpness: 0 });
+  }
+  const size = Math.min(video.videoWidth, video.videoHeight);
+  const offsetX = (video.videoWidth - size) / 2;
+  const offsetY = (video.videoHeight - size) / 2;
+  liveCtx.drawImage(video, offsetX, offsetY, size, size, 0, 0, WORK, WORK);
+  return assessFrame(liveCtx.getImageData(0, 0, WORK, WORK).data, WORK);
 }
 
 /**
@@ -244,10 +261,9 @@ export async function calibrateScan(dataUrl: string): Promise<CalibratedScan> {
   wctx.drawImage(image, 0, 0, WORK, WORK);
   const raw = wctx.getImageData(0, 0, WORK, WORK).data;
 
-  const quality = assessQuality(raw, WORK);
-  // Recomputed here (cheap at WORK res) for the calibration gains below.
   const face = detectFace(raw, WORK);
   const brightness = face.count ? face.sumLum / face.count : 0;
+  const quality = assessFrame(raw, WORK);
 
   // --- 2. Compute calibration gains from skin pixels. ---
   // Gray-world white balance: push the mean skin tone toward neutral so ambient

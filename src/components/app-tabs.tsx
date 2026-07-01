@@ -1,5 +1,7 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { StyleSheet, View } from 'react-native';
 
+import { AppHeader } from '@/components/app-header';
 import { Colors } from '@/constants/theme';
 import { useResolvedColorScheme } from '@/hooks/use-resolved-scheme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -17,16 +19,25 @@ export default function AppTabs() {
   const { t } = useTranslation();
 
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      {TABS.map((tab) => (
-        <NativeTabs.Trigger key={tab.name} name={tab.name}>
-          <NativeTabs.Trigger.Label>{t(tab.labelKey)}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf={tab.sf} md={tab.md} />
-        </NativeTabs.Trigger>
-      ))}
-    </NativeTabs>
+    <View style={styles.root}>
+      <AppHeader />
+      <NativeTabs
+        backgroundColor={colors.background}
+        indicatorColor={colors.backgroundElement}
+        labelStyle={{ selected: { color: colors.text } }}>
+        {TABS.map((tab) => (
+          <NativeTabs.Trigger key={tab.name} name={tab.name}>
+            <NativeTabs.Trigger.Label>{t(tab.labelKey)}</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon sf={tab.sf} md={tab.md} />
+          </NativeTabs.Trigger>
+        ))}
+      </NativeTabs>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});

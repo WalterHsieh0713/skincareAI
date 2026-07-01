@@ -19,6 +19,10 @@ export type CameraCaptureProps = {
   startLabel?: string;
   /** Override the confirm button label. */
   keepLabel?: string;
+  /** When true, runs live framing/lighting checks and blocks Capture until they pass (Feature 1 only). */
+  liveGuide?: boolean;
+  /** When true, calls onCapture immediately on Capture — no separate "keep" confirmation step. */
+  autoConfirm?: boolean;
 };
 
 /**
