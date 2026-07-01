@@ -93,6 +93,8 @@ export const en: Messages = {
         'Light is uneven — face a window or lamp head-on, not from the side.',
       blurry: 'Hold steady — the shot is blurry. Brace your arm and retake.',
     },
+    liveChecking: 'Checking framing…',
+    liveReady: 'Looking good — capture when ready.',
   },
   skinScore: {
     overall: 'overall skin score',
@@ -164,7 +166,7 @@ export const en: Messages = {
     baseSupport: 'Base & support',
     pasteTitle: 'Paste a list instead',
     pasteHint: 'no camera needed',
-    pastePlaceholder: 'Aqua, Glycerin, Niacinamide, Salicylic Acid…',
+    pastePlaceholder: 'Aqua, Glycerin, Niacinamide, Salicylic Acid… or type a category like "AHA"',
     identifyBtn: 'Identify ingredients',
     eduNote:
       'General ingredient education across ~80 common actives and base ingredients — not a personalized verdict on any product, and not medical advice.',

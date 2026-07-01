@@ -8,6 +8,7 @@ import {
 } from 'expo-router/ui';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { AppHeader } from './app-header';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
@@ -22,11 +23,16 @@ const TABS = [
   { name: 'progress', href: '/progress', labelKey: 'tabs.progress' },
 ] as const;
 
+/**
+ * Web tab navigator. Renders the persistent Dewpoint wordmark + streak row
+ * (`AppHeader`) first, then the 5-function tab bar as a normal (non-floating)
+ * row directly below it, then the active tab's content filling the rest.
+ */
 export default function AppTabs() {
   const { t } = useTranslation();
   return (
-    <Tabs>
-      <TabSlot style={{ height: '100%' }} />
+    <Tabs style={styles.root}>
+      <AppHeader />
       <TabList asChild>
         <CustomTabList>
           {TABS.map((tab) => (
@@ -36,6 +42,7 @@ export default function AppTabs() {
           ))}
         </CustomTabList>
       </TabList>
+      <TabSlot style={styles.slot} />
     </Tabs>
   );
 }
@@ -46,7 +53,7 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
       <ThemedView
         type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
         style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+        <ThemedText type="default" themeColor={isFocused ? 'text' : 'textSecondary'}>
           {children}
         </ThemedText>
       </ThemedView>
@@ -58,9 +65,6 @@ export function CustomTabList(props: TabListProps) {
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Dewpoint
-        </ThemedText>
         {props.children}
       </ThemedView>
     </View>
@@ -68,33 +72,38 @@ export function CustomTabList(props: TabListProps) {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    height: '100%',
+  },
+  slot: {
+    flex: 1,
+  },
   tabListContainer: {
-    position: 'absolute',
     width: '100%',
-    padding: Spacing.three,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.two,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
   },
   innerContainer: {
-    paddingVertical: Spacing.two,
+    paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.five,
     borderRadius: Spacing.five,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     flexGrow: 1,
-    gap: Spacing.two,
+    gap: Spacing.four,
     maxWidth: MaxContentWidth,
-  },
-  brandText: {
-    marginRight: 'auto',
   },
   pressed: {
     opacity: 0.7,
   },
   tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.four,
     borderRadius: Spacing.three,
   },
 });

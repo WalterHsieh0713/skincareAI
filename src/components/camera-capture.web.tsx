@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { assessVideoFrame } from '@/lib/scan-calibration';
+import type { ScanQuality, ScanQualityIssue } from '@/lib/scan-types';
 
 type CameraStatus =
   | 'idle'
@@ -14,6 +16,20 @@ type CameraStatus =
   | 'captured'
   | 'denied'
   | 'unsupported';
+
+// Worst-first order so live coaching targets the single most important fix
+// (mirrors the same ordering used post-capture in scan.tsx).
+const ISSUE_PRIORITY: ScanQualityIssue[] = [
+  'no-face',
+  'blurry',
+  'too-dark',
+  'too-bright',
+  'uneven-lighting',
+  'face-too-small',
+  'off-center',
+];
+
+const LIVE_CHECK_INTERVAL_MS = 350;
 
 export type CameraCaptureProps = {
   /** Called with a JPEG data URL when the user keeps a captured shot. */
@@ -28,6 +44,10 @@ export type CameraCaptureProps = {
   startLabel?: string;
   /** Override the confirm button label. */
   keepLabel?: string;
+  /** When true, runs live framing/lighting checks and blocks Capture until they pass (Feature 1 only). */
+  liveGuide?: boolean;
+  /** When true, calls onCapture immediately on Capture — no separate "keep" confirmation step. */
+  autoConfirm?: boolean;
 };
 
 /**
@@ -43,6 +63,8 @@ export function CameraCapture({
   crop = 'square',
   startLabel,
   keepLabel,
+  liveGuide = false,
+  autoConfirm = false,
 }: CameraCaptureProps) {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -52,6 +74,7 @@ export function CameraCapture({
   const [status, setStatus] = useState<CameraStatus>('idle');
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [liveQuality, setLiveQuality] = useState<ScanQuality | null>(null);
 
   // Fall back to translated defaults when a caller doesn't pass a label.
   const resolvedStartLabel = startLabel ?? t('camera.startScan');
@@ -71,6 +94,22 @@ export function CameraCapture({
       videoRef.current.srcObject = streamRef.current;
     }
   }, [status]);
+
+  // Live framing/lighting checks (Feature 1 only) — polls the video element
+  // directly rather than waiting for a captured photo, so bad shots never
+  // reach the Capture button in the first place.
+  useEffect(() => {
+    if (!liveGuide || status !== 'streaming') {
+      setLiveQuality(null);
+      return;
+    }
+    const id = setInterval(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      setLiveQuality(assessVideoFrame(video));
+    }, LIVE_CHECK_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [liveGuide, status]);
 
   const start = useCallback(async () => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
@@ -145,7 +184,11 @@ export function CameraCapture({
     stopStream();
     setPhoto(dataUrl);
     setStatus('captured');
-  }, [crop, mirror, stopStream]);
+    if (autoConfirm) {
+      // Skip the manual "keep" confirmation — score immediately on capture.
+      onCapture?.(dataUrl);
+    }
+  }, [crop, mirror, stopStream, autoConfirm, onCapture]);
 
   const keep = useCallback(() => {
     if (photo) {
@@ -157,6 +200,19 @@ export function CameraCapture({
   const showError = status === 'denied' || status === 'unsupported';
   const videoStyle = mirror ? mirroredVideoStyle : coverImageStyle;
   const viewfinderRatio = crop === 'square' ? styles.viewfinderSquare : styles.viewfinderTall;
+
+  // Live coaching (Feature 1 only): block Capture until framing/lighting pass.
+  const worstLiveIssue = liveQuality
+    ? ISSUE_PRIORITY.find((issue) => liveQuality.issues.includes(issue))
+    : undefined;
+  const liveMessage = !liveGuide || !isLive
+    ? null
+    : !liveQuality
+      ? t('scan.liveChecking')
+      : worstLiveIssue
+        ? t(`scan.guidance.${worstLiveIssue}`)
+        : t('scan.liveReady');
+  const captureBlocked = liveGuide && (!liveQuality || !liveQuality.valid);
 
   return (
     <View style={styles.container}>
@@ -199,11 +255,24 @@ export function CameraCapture({
         </ThemedText>
       ) : null}
 
+      {liveMessage ? (
+        <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+          {liveMessage}
+        </ThemedText>
+      ) : null}
+
       {status === 'idle' || showError ? (
         <Button label={showError ? t('camera.retryCamera') : resolvedStartLabel} onPress={start} />
       ) : null}
 
-      {isLive ? <Button label={t('camera.capture')} onPress={capture} /> : null}
+      {isLive ? (
+        <Button
+          label={t('camera.capture')}
+          onPress={capture}
+          disabled={captureBlocked}
+          style={captureBlocked ? styles.disabled : undefined}
+        />
+      ) : null}
 
       {status === 'captured' ? (
         <View style={styles.actionRow}>
@@ -211,9 +280,11 @@ export function CameraCapture({
             label={t('camera.retake')}
             variant="secondary"
             onPress={start}
-            style={styles.action}
+            style={autoConfirm ? undefined : styles.action}
           />
-          <Button label={resolvedKeepLabel} onPress={keep} style={styles.action} />
+          {!autoConfirm ? (
+            <Button label={resolvedKeepLabel} onPress={keep} style={styles.action} />
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -270,5 +341,8 @@ const styles = StyleSheet.create({
   },
   action: {
     flex: 1,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

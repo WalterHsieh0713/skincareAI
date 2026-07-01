@@ -1,4 +1,4 @@
-import type { CalibratedScan } from '@/lib/scan-types';
+import type { CalibratedScan, ScanQuality } from '@/lib/scan-types';
 
 /**
  * Native placeholder. The CV calibration + validation pipeline runs on the
@@ -7,20 +7,29 @@ import type { CalibratedScan } from '@/lib/scan-types';
  * scan camera is disabled, so this isn't called in practice. Fails closed —
  * returns an invalid verdict so nothing unvalidated is ever scored.
  */
+const UNAVAILABLE_QUALITY: ScanQuality = {
+  valid: false,
+  issues: ['no-face'],
+  metrics: {
+    faceFill: 0,
+    centerOffset: 1,
+    brightness: 0,
+    evenness: 0,
+    sharpness: 0,
+  },
+  guidance: 'Scan calibration is available on web for now.',
+};
+
 export async function calibrateScan(dataUrl: string): Promise<CalibratedScan> {
-  return {
-    dataUrl,
-    quality: {
-      valid: false,
-      issues: ['no-face'],
-      metrics: {
-        faceFill: 0,
-        centerOffset: 1,
-        brightness: 0,
-        evenness: 0,
-        sharpness: 0,
-      },
-      guidance: 'Scan calibration is available on web for now.',
-    },
-  };
+  return { dataUrl, quality: UNAVAILABLE_QUALITY };
+}
+
+/** Native stub for type parity with scan-calibration.web.ts; the native camera never calls this. */
+export function assessFrame(_raw: Uint8ClampedArray, _n: number): ScanQuality {
+  return UNAVAILABLE_QUALITY;
+}
+
+/** Native stub for type parity with scan-calibration.web.ts; the native camera never calls this. */
+export function assessVideoFrame(_video: HTMLVideoElement): ScanQuality {
+  return UNAVAILABLE_QUALITY;
 }

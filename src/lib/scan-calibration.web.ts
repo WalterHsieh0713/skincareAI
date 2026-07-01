@@ -193,6 +193,46 @@ function validate(metrics: ScanMetrics): ScanQuality {
   };
 }
 
+/** Pure pixel-in, verdict-out — shared by calibrateScan() and the live preview loop. */
+export function assessFrame(raw: Uint8ClampedArray, n: number): ScanQuality {
+  const face = detectFace(raw, n);
+  const faceFill = face.count / (n * n);
+  const centerOffset = face.count
+    ? Math.min(1, Math.hypot(face.cx - 0.5, face.cy - 0.5) / 0.5)
+    : 1;
+  const brightness = face.count ? face.sumLum / face.count : 0;
+  const metrics: ScanMetrics = {
+    faceFill,
+    centerOffset,
+    brightness,
+    evenness: evennessFrom(face),
+    sharpness: laplacianVariance(raw, n),
+  };
+  return validate(metrics);
+}
+
+// Reused across ticks so the live preview loop doesn't allocate a canvas ~3x/sec.
+let liveCanvas: HTMLCanvasElement | null = null;
+let liveCtx: CanvasRenderingContext2D | null = null;
+
+/** Draws the current square-cropped video frame at WORK resolution and assesses it. */
+export function assessVideoFrame(video: HTMLVideoElement): ScanQuality {
+  if (!liveCanvas) {
+    liveCanvas = document.createElement('canvas');
+    liveCanvas.width = WORK;
+    liveCanvas.height = WORK;
+    liveCtx = liveCanvas.getContext('2d', { willReadFrequently: true });
+  }
+  if (!liveCtx || !video.videoWidth || !video.videoHeight) {
+    return validate({ faceFill: 0, centerOffset: 1, brightness: 0, evenness: 0, sharpness: 0 });
+  }
+  const size = Math.min(video.videoWidth, video.videoHeight);
+  const offsetX = (video.videoWidth - size) / 2;
+  const offsetY = (video.videoHeight - size) / 2;
+  liveCtx.drawImage(video, offsetX, offsetY, size, size, 0, 0, WORK, WORK);
+  return assessFrame(liveCtx.getImageData(0, 0, WORK, WORK).data, WORK);
+}
+
 /**
  * Run validation + calibration on a raw capture.
  *
@@ -222,19 +262,8 @@ export async function calibrateScan(dataUrl: string): Promise<CalibratedScan> {
   const raw = wctx.getImageData(0, 0, WORK, WORK).data;
 
   const face = detectFace(raw, WORK);
-  const faceFill = face.count / (WORK * WORK);
-  const centerOffset = face.count
-    ? Math.min(1, Math.hypot(face.cx - 0.5, face.cy - 0.5) / 0.5)
-    : 1;
   const brightness = face.count ? face.sumLum / face.count : 0;
-  const metrics: ScanMetrics = {
-    faceFill,
-    centerOffset,
-    brightness,
-    evenness: evennessFrom(face),
-    sharpness: laplacianVariance(raw, WORK),
-  };
-  const quality = validate(metrics);
+  const quality = assessFrame(raw, WORK);
 
   // --- 2. Compute calibration gains from skin pixels. ---
   // Gray-world white balance: push the mean skin tone toward neutral so ambient

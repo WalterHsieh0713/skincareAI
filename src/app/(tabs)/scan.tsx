@@ -97,7 +97,7 @@ export default function ScanScreen() {
   return (
     <Screen title={t('scan.title')} subtitle={t('scan.subtitle')}>
       <Card>
-        <CameraCapture onCapture={handleCapture} keepLabel={t('scan.keepLabel')} />
+        <CameraCapture onCapture={handleCapture} keepLabel={t('scan.keepLabel')} liveGuide autoConfirm />
         <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
           {t('scan.scoredNote')}
         </ThemedText>

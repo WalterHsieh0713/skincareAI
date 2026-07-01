@@ -58,6 +58,13 @@ export function matchIngredients(rawText: string): Ingredient[] {
     return [];
   }
 
+  const categoryMatch = CATEGORY_ORDER.find((category) => normalize(category) === text);
+  if (categoryMatch) {
+    return INGREDIENTS.filter((ingredient) => ingredient.category === categoryMatch).sort(
+      (a, b) => (a.active === b.active ? a.name.localeCompare(b.name) : a.active ? -1 : 1),
+    );
+  }
+
   const matched = INGREDIENTS.filter((ingredient) =>
     ingredient.aliases.some((alias) => containsAlias(text, normalize(alias))),
   );

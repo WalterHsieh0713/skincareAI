@@ -29,7 +29,7 @@ export default function HomeScreen() {
         : t('home.vsLastDown', { n: Math.abs(delta) });
 
   return (
-    <Screen title="Dewpoint" subtitle={t('home.subtitle')}>
+    <Screen subtitle={t('home.subtitle')}>
       {/* Dew Score — the at-a-glance hook, from your latest scan. */}
       <Card title={t('home.dewScore')} hint={t('home.dewScoreHint')}>
         <View style={styles.scoreRow}>
