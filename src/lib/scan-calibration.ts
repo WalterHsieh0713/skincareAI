@@ -1,4 +1,4 @@
-import type { CalibratedScan, ScanQuality } from '@/lib/scan-types';
+import type { CalibratedScan, ScanQuality, ScanQualityIssue } from '@/lib/scan-types';
 
 /**
  * Native placeholder. The CV calibration + validation pipeline runs on the
@@ -23,6 +23,17 @@ const UNAVAILABLE_QUALITY: ScanQuality = {
 export async function calibrateScan(dataUrl: string): Promise<CalibratedScan> {
   return { dataUrl, quality: UNAVAILABLE_QUALITY };
 }
+
+/** Native stub for type parity with scan-calibration.web.ts; the native camera never calls this. */
+export const ISSUE_PRIORITY: ScanQualityIssue[] = [
+  'no-face',
+  'blurry',
+  'too-dark',
+  'too-bright',
+  'uneven-lighting',
+  'face-too-small',
+  'off-center',
+];
 
 /** Native stub for type parity with scan-calibration.web.ts; the native camera never calls this. */
 export function assessFrame(_raw: Uint8ClampedArray, _n: number): ScanQuality {

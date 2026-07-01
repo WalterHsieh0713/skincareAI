@@ -48,7 +48,7 @@ const GUIDANCE: Record<ScanQualityIssue, string> = {
 };
 
 // Issues are reported worst-first so the UI can coach the single best fix.
-const ISSUE_PRIORITY: ScanQualityIssue[] = [
+export const ISSUE_PRIORITY: ScanQualityIssue[] = [
   'no-face',
   'blurry',
   'too-dark',
