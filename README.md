@@ -1,6 +1,8 @@
-# Welcome to your Expo app 👋
+# skincareAI (Dewpoint)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Scans skin and skincare products to work towards better skin.
+
+This is the **Dewpoint** app: an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
 
