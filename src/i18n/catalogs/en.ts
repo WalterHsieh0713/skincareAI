@@ -57,8 +57,6 @@ export const en: Messages = {
       'Each scan is scored on-device and saved to your timeline for the Progress time-lapse.',
     scoring: 'Scoring your scan…',
     retakeTitle: 'Let’s retake that one',
-    onlyScoreNote:
-      'We only score scans that pass these checks, so your trend stays comparable day to day.',
     passedValidation:
       'Passed validation · white-balanced · exposure-normalized ({brightness}→170 luma).',
     calibrated: 'calibrated ✓',
@@ -114,6 +112,7 @@ export const en: Messages = {
     retryCamera: 'Retry camera',
     startScan: 'Start guided scan',
     useScan: 'Use this scan',
+    faceFound: 'Face found — you can capture now.',
   },
   routine: {
     title: 'Routine',

@@ -51,8 +51,6 @@ export const fr: Messages = {
       'Chaque scan est noté sur l’appareil et enregistré dans votre historique pour le time-lapse de Progrès.',
     scoring: 'Notation de votre scan…',
     retakeTitle: 'Reprenons cette photo',
-    onlyScoreNote:
-      'Nous ne notons que les scans qui passent ces contrôles, pour que votre tendance reste comparable au fil des jours.',
     passedValidation:
       'Validation réussie · balance des blancs · exposition normalisée ({brightness}→170 luma).',
     calibrated: 'calibré ✓',
@@ -104,6 +102,7 @@ export const fr: Messages = {
     retryCamera: 'Réessayer la caméra',
     startScan: 'Démarrer le scan guidé',
     useScan: 'Utiliser ce scan',
+    faceFound: 'Visage détecté — vous pouvez capturer.',
   },
   routine: {
     title: 'Routine',

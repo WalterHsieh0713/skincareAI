@@ -49,7 +49,6 @@ export const ko: Messages = {
     scoredNote: '각 스캔은 기기에서 채점되어 경과 타임랩스를 위해 타임라인에 저장됩니다.',
     scoring: '스캔 채점 중…',
     retakeTitle: '다시 한 번 찍어요',
-    onlyScoreNote: '이 검사를 통과한 스캔만 채점하므로 추세가 매일 비교 가능합니다.',
     passedValidation:
       '검증 통과 · 화이트 밸런스 · 노출 정규화 ({brightness}→170 luma).',
     calibrated: '보정됨 ✓',
@@ -98,6 +97,7 @@ export const ko: Messages = {
     retryCamera: '카메라 다시 시도',
     startScan: '가이드 스캔 시작',
     useScan: '이 스캔 사용',
+    faceFound: '얼굴 인식됨 — 지금 촬영할 수 있어요.',
   },
   routine: {
     title: '루틴',

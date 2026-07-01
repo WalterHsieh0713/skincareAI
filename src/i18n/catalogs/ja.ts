@@ -49,7 +49,6 @@ export const ja: Messages = {
     scoredNote: '各スキャンは端末上で採点され、経過のタイムラプス用に保存されます。',
     scoring: 'スキャンを採点中…',
     retakeTitle: 'もう一度撮り直しましょう',
-    onlyScoreNote: 'これらのチェックを通過したスキャンのみ採点するので、傾向が日々比較できます。',
     passedValidation:
       '検証に合格 · ホワイトバランス · 露出を正規化（{brightness}→170 luma）。',
     calibrated: '校正済み ✓',
@@ -98,6 +97,7 @@ export const ja: Messages = {
     retryCamera: 'カメラを再試行',
     startScan: 'ガイド付きスキャンを開始',
     useScan: 'このスキャンを使う',
+    faceFound: '顔を検出しました — 撮影できます。',
   },
   routine: {
     title: 'ルーティン',

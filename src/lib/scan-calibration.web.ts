@@ -21,7 +21,7 @@ import type {
  */
 
 // --- Calibration constants (tuned against the canvas pipeline at WORK px) ---
-const WORK = 256; // analysis resolution — fast, enough for stats
+export const WORK = 256; // analysis resolution — fast, enough for stats
 const MAX_OUT = 1024; // cap stored/scored image so calibration stays cheap
 
 // Validation thresholds. Each maps directly to one ScanQualityIssue.
@@ -48,7 +48,7 @@ const GUIDANCE: Record<ScanQualityIssue, string> = {
 };
 
 // Issues are reported worst-first so the UI can coach the single best fix.
-const ISSUE_PRIORITY: ScanQualityIssue[] = [
+export const ISSUE_PRIORITY: ScanQualityIssue[] = [
   'no-face',
   'blurry',
   'too-dark',
@@ -194,6 +194,29 @@ function validate(metrics: ScanMetrics): ScanQuality {
 }
 
 /**
+ * Assess capture quality from a raw frame's pixel data (RGBA, `n`×`n`).
+ * Shared by the post-capture calibration pipeline below and the live
+ * in-viewfinder feedback loop in `CameraCapture`, so both judge frames the
+ * same way.
+ */
+export function assessQuality(data: Uint8ClampedArray, n: number): ScanQuality {
+  const face = detectFace(data, n);
+  const faceFill = face.count / (n * n);
+  const centerOffset = face.count
+    ? Math.min(1, Math.hypot(face.cx - 0.5, face.cy - 0.5) / 0.5)
+    : 1;
+  const brightness = face.count ? face.sumLum / face.count : 0;
+  const metrics: ScanMetrics = {
+    faceFill,
+    centerOffset,
+    brightness,
+    evenness: evennessFrom(face),
+    sharpness: laplacianVariance(data, n),
+  };
+  return validate(metrics);
+}
+
+/**
  * Run validation + calibration on a raw capture.
  *
  * Validation metrics are measured on the RAW pixels (that's what we're judging
@@ -221,20 +244,10 @@ export async function calibrateScan(dataUrl: string): Promise<CalibratedScan> {
   wctx.drawImage(image, 0, 0, WORK, WORK);
   const raw = wctx.getImageData(0, 0, WORK, WORK).data;
 
+  const quality = assessQuality(raw, WORK);
+  // Recomputed here (cheap at WORK res) for the calibration gains below.
   const face = detectFace(raw, WORK);
-  const faceFill = face.count / (WORK * WORK);
-  const centerOffset = face.count
-    ? Math.min(1, Math.hypot(face.cx - 0.5, face.cy - 0.5) / 0.5)
-    : 1;
   const brightness = face.count ? face.sumLum / face.count : 0;
-  const metrics: ScanMetrics = {
-    faceFill,
-    centerOffset,
-    brightness,
-    evenness: evennessFrom(face),
-    sharpness: laplacianVariance(raw, WORK),
-  };
-  const quality = validate(metrics);
 
   // --- 2. Compute calibration gains from skin pixels. ---
   // Gray-world white balance: push the mean skin tone toward neutral so ambient

@@ -51,8 +51,6 @@ export const ptBR: Messages = {
       'Cada escaneamento é pontuado no dispositivo e salvo na sua linha do tempo para o time-lapse de Progresso.',
     scoring: 'Pontuando seu escaneamento…',
     retakeTitle: 'Vamos refazer essa foto',
-    onlyScoreNote:
-      'Só pontuamos escaneamentos que passam nessas verificações, para que sua tendência siga comparável dia a dia.',
     passedValidation:
       'Validação aprovada · balanço de branco · exposição normalizada ({brightness}→170 luma).',
     calibrated: 'calibrado ✓',
@@ -104,6 +102,7 @@ export const ptBR: Messages = {
     retryCamera: 'Tentar câmera novamente',
     startScan: 'Iniciar escaneamento guiado',
     useScan: 'Usar este escaneamento',
+    faceFound: 'Rosto encontrado — você já pode capturar.',
   },
   routine: {
     title: 'Rotina',

@@ -51,8 +51,6 @@ export const it: Messages = {
       'Ogni scansione viene valutata sul dispositivo e salvata nella tua cronologia per il time-lapse dei Progressi.',
     scoring: 'Valutazione della scansione…',
     retakeTitle: 'Rifacciamo quello scatto',
-    onlyScoreNote:
-      'Valutiamo solo le scansioni che superano questi controlli, così il tuo andamento resta confrontabile giorno per giorno.',
     passedValidation:
       'Validazione superata · bilanciamento del bianco · esposizione normalizzata ({brightness}→170 luma).',
     calibrated: 'calibrato ✓',
@@ -104,6 +102,7 @@ export const it: Messages = {
     retryCamera: 'Riprova fotocamera',
     startScan: 'Avvia scansione guidata',
     useScan: 'Usa questa scansione',
+    faceFound: 'Volto trovato — puoi scattare.',
   },
   routine: {
     title: 'Routine',

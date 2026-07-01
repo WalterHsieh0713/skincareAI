@@ -51,8 +51,6 @@ export const es: Messages = {
       'Cada escaneo se puntúa en el dispositivo y se guarda en tu línea de tiempo para el time-lapse de Progreso.',
     scoring: 'Puntuando tu escaneo…',
     retakeTitle: 'Repitamos esa toma',
-    onlyScoreNote:
-      'Solo puntuamos escaneos que pasan estas comprobaciones, para que tu tendencia siga siendo comparable día a día.',
     passedValidation:
       'Validación superada · balance de blancos · exposición normalizada ({brightness}→170 luma).',
     calibrated: 'calibrado ✓',
@@ -104,6 +102,7 @@ export const es: Messages = {
     retryCamera: 'Reintentar cámara',
     startScan: 'Iniciar escaneo guiado',
     useScan: 'Usar este escaneo',
+    faceFound: 'Rostro detectado — ya puedes capturar.',
   },
   routine: {
     title: 'Rutina',

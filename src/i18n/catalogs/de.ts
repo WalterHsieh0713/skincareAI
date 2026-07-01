@@ -51,8 +51,6 @@ export const de: Messages = {
       'Jeder Scan wird auf dem Gerät bewertet und für den Fortschritts-Zeitraffer in deiner Timeline gespeichert.',
     scoring: 'Dein Scan wird bewertet…',
     retakeTitle: 'Mach die Aufnahme noch mal',
-    onlyScoreNote:
-      'Wir bewerten nur Scans, die diese Prüfungen bestehen, damit dein Verlauf von Tag zu Tag vergleichbar bleibt.',
     passedValidation:
       'Validierung bestanden · Weißabgleich · Belichtung normalisiert ({brightness}→170 Luma).',
     calibrated: 'kalibriert ✓',
@@ -104,6 +102,7 @@ export const de: Messages = {
     retryCamera: 'Kamera erneut versuchen',
     startScan: 'Geführten Scan starten',
     useScan: 'Diesen Scan verwenden',
+    faceFound: 'Gesicht erkannt — du kannst jetzt aufnehmen.',
   },
   routine: {
     title: 'Routine',

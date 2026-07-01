@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { assessQuality, ISSUE_PRIORITY, WORK } from '@/lib/scan-calibration';
+import type { ScanQuality } from '@/lib/scan-types';
+
+// How often to re-judge the live frame while the selfie viewfinder is open.
+const LIVE_CHECK_INTERVAL_MS = 400;
+const LIVE_STATUS_COLORS = { ok: '#16a34a', issue: '#dc2626' } as const;
 
 type CameraStatus =
   | 'idle'
@@ -52,6 +58,8 @@ export function CameraCapture({
   const [status, setStatus] = useState<CameraStatus>('idle');
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [liveQuality, setLiveQuality] = useState<ScanQuality | null>(null);
+  const liveCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Fall back to translated defaults when a caller doesn't pass a label.
   const resolvedStartLabel = startLabel ?? t('camera.startScan');
@@ -71,6 +79,41 @@ export function CameraCapture({
       videoRef.current.srcObject = streamRef.current;
     }
   }, [status]);
+
+  // Live face-centering feedback for the selfie flow: judge the frame the
+  // same way `calibrateScan` judges the final photo, so what the user sees
+  // while framing matches what happens when they press capture.
+  useEffect(() => {
+    if (status !== 'streaming' || facing !== 'user') {
+      setLiveQuality(null);
+      return;
+    }
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+    if (!liveCanvasRef.current) {
+      liveCanvasRef.current = document.createElement('canvas');
+      liveCanvasRef.current.width = WORK;
+      liveCanvasRef.current.height = WORK;
+    }
+    const canvas = liveCanvasRef.current;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) {
+      return;
+    }
+
+    const id = setInterval(() => {
+      if (video.readyState < video.HAVE_CURRENT_DATA) {
+        return;
+      }
+      ctx.drawImage(video, 0, 0, WORK, WORK);
+      const frame = ctx.getImageData(0, 0, WORK, WORK).data;
+      setLiveQuality(assessQuality(frame, WORK));
+    }, LIVE_CHECK_INTERVAL_MS);
+
+    return () => clearInterval(id);
+  }, [status, facing]);
 
   const start = useCallback(async () => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
@@ -158,6 +201,12 @@ export function CameraCapture({
   const videoStyle = mirror ? mirroredVideoStyle : coverImageStyle;
   const viewfinderRatio = crop === 'square' ? styles.viewfinderSquare : styles.viewfinderTall;
 
+  // Worst-first, same rule the post-capture retake card uses, so the live
+  // hint and the eventual rejection reason never disagree.
+  const liveIssue = liveQuality
+    ? ISSUE_PRIORITY.find((issue) => liveQuality.issues.includes(issue))
+    : undefined;
+
   return (
     <View style={styles.container}>
       <View
@@ -192,6 +241,17 @@ export function CameraCapture({
           />
         ) : null}
       </View>
+
+      {isLive && liveQuality ? (
+        <ThemedText
+          type="smallBold"
+          style={[
+            styles.center,
+            { color: liveQuality.valid ? LIVE_STATUS_COLORS.ok : LIVE_STATUS_COLORS.issue },
+          ]}>
+          {liveQuality.valid ? t('camera.faceFound') : t(`scan.guidance.${liveIssue}`)}
+        </ThemedText>
+      ) : null}
 
       {showError && errorKey ? (
         <ThemedText type="small" themeColor="textSecondary" style={styles.center}>

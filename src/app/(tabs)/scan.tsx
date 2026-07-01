@@ -11,28 +11,12 @@ import { Spacing } from '@/constants/theme';
 import { useScans } from '@/hooks/use-scans';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { calibrateScan } from '@/lib/scan-calibration';
+import { calibrateScan, ISSUE_PRIORITY } from '@/lib/scan-calibration';
 import { analyzeFace, downscaleForStorage } from '@/lib/scan-image';
 import { addScan } from '@/lib/scan-store';
-import {
-  dayKeyOf,
-  type ScanQuality,
-  type ScanQualityIssue,
-  type SkinScores,
-} from '@/lib/scan-types';
+import { dayKeyOf, type ScanQuality, type SkinScores } from '@/lib/scan-types';
 
 const CAPTURE_GUIDE_KEYS = ['guide1', 'guide2', 'guide3', 'guide4'] as const;
-
-// Worst-first order so the coaching line targets the single most important fix.
-const ISSUE_PRIORITY: ScanQualityIssue[] = [
-  'no-face',
-  'blurry',
-  'too-dark',
-  'too-bright',
-  'uneven-lighting',
-  'face-too-small',
-  'off-center',
-];
 
 export default function ScanScreen() {
   const scans = useScans();
@@ -129,9 +113,6 @@ export default function ScanScreen() {
           {worstIssue ? (
             <ThemedText type="small">{t(`scan.guidance.${worstIssue}`)}</ThemedText>
           ) : null}
-          <ThemedText type="small" themeColor="textSecondary">
-            {t('scan.onlyScoreNote')}
-          </ThemedText>
         </Card>
       ) : null}
 

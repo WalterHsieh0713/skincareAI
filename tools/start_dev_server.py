@@ -1,5 +1,6 @@
 """Start the Expo dev server for web on a specified port."""
 
+import os
 import subprocess
 import sys
 
@@ -10,7 +11,9 @@ def start_dev_server(port: int = DEFAULT_PORT):
     cmd = ["npx", "expo", "start", "--web", "--port", str(port)]
     print(f"Starting Expo dev server on port {port}...")
     try:
-        subprocess.run(cmd, check=True)
+        # On Windows, npx is a .cmd shim that CreateProcess can't launch
+        # directly without going through the shell.
+        subprocess.run(cmd, check=True, shell=(os.name == "nt"))
     except subprocess.CalledProcessError as e:
         print(f"Expo dev server exited with code {e.returncode}")
         sys.exit(e.returncode)

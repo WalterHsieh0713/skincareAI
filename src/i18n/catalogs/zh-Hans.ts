@@ -49,7 +49,6 @@ export const zhHans: Messages = {
     scoredNote: '每次扫描都在设备上评分，并保存到你的时间线用于进展延时。',
     scoring: '正在为你的扫描评分…',
     retakeTitle: '我们重拍一次',
-    onlyScoreNote: '我们只为通过这些检查的扫描评分，这样你的趋势才能每天可比较。',
     passedValidation: '验证通过 · 白平衡 · 曝光标准化（{brightness}→170 luma）。',
     calibrated: '已校准 ✓',
     notScored: '未评分',
@@ -97,6 +96,7 @@ export const zhHans: Messages = {
     retryCamera: '重试相机',
     startScan: '开始引导式扫描',
     useScan: '使用此扫描',
+    faceFound: '已检测到面部 — 现在可以拍摄了。',
   },
   routine: {
     title: '护肤流程',
