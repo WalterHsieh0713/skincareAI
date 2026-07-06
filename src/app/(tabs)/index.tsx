@@ -10,15 +10,17 @@ import { Spacing } from '@/constants/theme';
 import { useRoutine } from '@/hooks/use-routine';
 import { useScans } from '@/hooks/use-scans';
 import { useTranslation } from '@/hooks/use-translation';
+import { dayKeyOf } from '@/lib/scan-types';
 
 export default function HomeScreen() {
   const scans = useScans();
-  const { today, streak, restoresRemaining, canRestore, restoreStreak } = useRoutine();
+  const { streak, restoresRemaining, canRestore, restoreStreak } = useRoutine();
   const { t, tn } = useTranslation();
 
   const latest = scans.length > 0 ? scans[scans.length - 1] : null;
   const previous = scans.length > 1 ? scans[scans.length - 2] : null;
   const delta = latest && previous ? latest.scores.overall - previous.scores.overall : null;
+  const scannedToday = latest?.dayKey === dayKeyOf(Date.now());
 
   const deltaLabel = !latest
     ? t('home.noScans')
@@ -63,12 +65,7 @@ export default function HomeScreen() {
           <ThemedText themeColor="textSecondary">{t('home.dayStreak')}</ThemedText>
         </View>
         <ThemedText type="small" themeColor="textSecondary">
-          {today.am && today.pm
-            ? t('home.bothDone')
-            : t('home.todayStatus', {
-                am: today.am ? '✓' : '—',
-                pm: today.pm ? '✓' : '—',
-              })}
+          {scannedToday ? t('home.scannedToday') : t('home.noScanToday')}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {tn('home.restoresLeft', restoresRemaining, { count: restoresRemaining })}

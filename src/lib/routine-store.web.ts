@@ -5,6 +5,7 @@ import {
   type RoutineLog,
   type RoutinePart,
   type RoutineState,
+  type ScanDaySet,
 } from '@/lib/routine';
 import { dayKeyOf } from '@/lib/scan-types';
 
@@ -78,10 +79,12 @@ export function submitPart(part: RoutinePart): void {
   emit();
 }
 
-/** Spend one restore to bridge the day that broke the streak. No-op if not allowed. */
-export function restoreStreak(): void {
+/** Spend one restore to bridge the scan day that broke the streak. No-op if not allowed. */
+export function restoreStreak(scanDays: ScanDaySet): void {
   const now = Date.now();
-  const day = canRestore(state, now) ? repairableDay(state, now) : null;
+  const day = canRestore(scanDays, state.restored, now)
+    ? repairableDay(scanDays, state.restored, now)
+    : null;
   if (!day) {
     return;
   }

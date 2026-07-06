@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -8,23 +9,32 @@ import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { useRoutine } from '@/hooks/use-routine';
+import { useRoutineConfig } from '@/hooks/use-routine-config';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import type { RoutinePart } from '@/lib/routine';
 import { currentPart, isWindowOpen, localTimeZone, windowLabel } from '@/lib/time';
 
-const SECTIONS: { titleKey: string; part: RoutinePart; stepKeys: string[] }[] = [
-  {
-    titleKey: 'routine.morning',
-    part: 'am',
-    stepKeys: ['routine.amStep1', 'routine.amStep2', 'routine.amStep3', 'routine.amStep4'],
-  },
-  {
-    titleKey: 'routine.evening',
-    part: 'pm',
-    stepKeys: ['routine.pmStep1', 'routine.pmStep2', 'routine.pmStep3', 'routine.pmStep4'],
-  },
+const SECTIONS: { titleKey: string; part: RoutinePart }[] = [
+  { titleKey: 'routine.morning', part: 'am' },
+  { titleKey: 'routine.evening', part: 'pm' },
 ];
+
+/** Compact pencil icon that opens the routine editor. */
+function EditIcon() {
+  const { t } = useTranslation();
+  return (
+    <Link href="/routine-editor" asChild>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('routine.editRoutine')}
+        hitSlop={Spacing.two}
+        style={({ pressed }) => pressed && styles.pressed}>
+        <ThemedText type="smallBold">✎</ThemedText>
+      </Pressable>
+    </Link>
+  );
+}
 
 function Step({ label }: { label: string }) {
   const theme = useTheme();
@@ -52,8 +62,9 @@ function Step({ label }: { label: string }) {
 }
 
 export default function RoutineScreen() {
-  const { today, streak, submitAM, submitPM } = useRoutine();
-  const { t, tn } = useTranslation();
+  const { today, submitAM, submitPM } = useRoutine();
+  const { config } = useRoutineConfig();
+  const { t } = useTranslation();
   const submitters: Record<RoutinePart, () => void> = {
     am: submitAM,
     pm: submitPM,
@@ -80,33 +91,43 @@ export default function RoutineScreen() {
           <StatusPill label={t('routine.pm')} done={today.pm} active={activePart === 'pm'} />
         </View>
         <ThemedText type="small" themeColor="textSecondary">
-          {bothDone
-            ? tn('routine.bothDone', streak, { count: streak })
-            : t('routine.submitBoth')}
+          {bothDone ? t('routine.bothDoneAdherence') : t('routine.submitBoth')}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {t('routine.streakHint')}
         </ThemedText>
       </Card>
 
-      {sections.map(({ titleKey, part, stepKeys }) => {
+      {sections.map(({ titleKey, part }) => {
         const submitted = today[part];
-        const isActive = part === activePart;
         const open = part === 'am' ? amOpen : pmOpen;
         const title = t(titleKey);
         const locked = !open && !submitted;
+        const steps = config[part];
         return (
           <Card
             key={part}
             title={title}
-            hint={
-              submitted
-                ? t('routine.submitted')
-                : open
-                  ? t('routine.now')
-                  : t('routine.windowClosed', { window: windowLabel(part) })
+            action={
+              <View style={styles.cardAction}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {submitted
+                    ? t('routine.submitted')
+                    : open
+                      ? t('routine.now')
+                      : t('routine.windowClosed', { window: windowLabel(part) })}
+                </ThemedText>
+                <EditIcon />
+              </View>
             }>
             <ThemedView type="backgroundElement" style={styles.steps}>
-              {stepKeys.map((stepKey) => (
-                <Step key={stepKey} label={t(stepKey)} />
-              ))}
+              {steps.length === 0 ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {t('routine.noSteps')}
+                </ThemedText>
+              ) : (
+                steps.map((step, index) => <Step key={`${step}-${index}`} label={step} />)
+              )}
             </ThemedView>
             <Button
               label={
@@ -197,5 +218,13 @@ const styles = StyleSheet.create({
   },
   submitted: {
     opacity: 0.5,
+  },
+  cardAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

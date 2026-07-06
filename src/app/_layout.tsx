@@ -27,6 +27,8 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/routine" options={{ headerShown: false }} />
+        <Stack.Screen name="routine-editor" options={{ title: t('routine.editRoutine') }} />
         <Stack.Screen name="settings/index" options={{ title: t('nav.settings') }} />
         <Stack.Screen name="settings/account" options={{ title: t('nav.account') }} />
         <Stack.Screen name="settings/subscription" options={{ title: t('nav.subscription') }} />
