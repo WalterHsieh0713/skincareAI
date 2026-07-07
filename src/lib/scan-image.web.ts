@@ -93,11 +93,13 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
   }
   const texture = gradCount ? gradSum / gradCount : 0;
 
-  // Luminance spread (hydration proxy) + blemish spike fraction.
+  // Luminance spread (hydration proxy) + blemish spike fraction. Thresholds are
+  // set well past normal facial variance (lips, eyebrow shadow, subtle tone
+  // shifts) so those don't get miscounted as blemishes and floor the score.
   let lumVar = 0;
   let blemish = 0;
-  const redThreshold = rednessMean + 18;
-  const darkThreshold = lumMean - 35;
+  const redThreshold = rednessMean + 30;
+  const darkThreshold = lumMean - 50;
   for (let p = 0; p < N * N; p++) {
     if (!useAll && !isSkin[p]) {
       continue;
@@ -113,7 +115,7 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
 
   const redness = Math.round(100 * (1 - norm(rednessMean, 8, 55)));
   const textureScore = Math.round(100 * (1 - norm(texture, 3, 22)));
-  const blemishes = Math.round(100 * (1 - norm(blemishFrac, 0.005, 0.12)));
+  const blemishes = Math.round(100 * (1 - norm(blemishFrac, 0.01, 0.25)));
   const hydration = Math.round(100 * (1 - norm(lumStd, 16, 70)));
   const overall = Math.round((redness + textureScore + blemishes + hydration) / 4);
 

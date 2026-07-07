@@ -42,12 +42,16 @@ export type ScanMetrics = {
   faceFill: number;
   /** Skin centroid distance from frame center, 0 (centered) – 1. */
   centerOffset: number;
-  /** Mean skin luminance, 0–255. */
+  /** Mean skin luminance, 0–255. Still reported for calibration's exposure gain, but no longer the too-dark/too-bright gate (see shadowFrac/highlightFrac). */
   brightness: number;
   /** Lighting evenness across the face, 0 (harsh side-light) – 1 (flat). */
   evenness: number;
   /** Laplacian variance — focus/sharpness; higher = crisper. */
   sharpness: number;
+  /** Fraction of skin pixels crushed near-black (genuine underexposure, not just naturally dark skin), 0–1. */
+  shadowFrac: number;
+  /** Fraction of skin pixels blown out near-white (genuine overexposure, not just naturally light skin), 0–1. */
+  highlightFrac: number;
 };
 
 /**
