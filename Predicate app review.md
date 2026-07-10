@@ -21,3 +21,19 @@ Notes on existing apps in or adjacent to Dewpoint's space — what they do well,
 - No widget support — adding one would let users launch the scanner faster from the lock screen.
 
 ---
+
+## Neutrogena Skin360 & L'Oréal Skin Genius
+
+**Pros**
+- Both have a delicate, polished UI — the wording and sample imagery feel very professional, which tracks given they're backed by established cosmetic/skincare brands.
+- L'Oréal generates an entire list of recommended products based on your skincare profile scan results.
+- L'Oréal breaks your skin profile down into distinct major categories and scores each one individually (e.g., acne, wrinkles, eye bags, etc.).
+- Neutrogena's scanning UI is excellent — interactive and highly responsive throughout the scan itself.
+- Neutrogena asks follow-up questions during the flow to gather more information, which makes the resulting skin analysis more accurate.
+- There's a lot to learn from both here — we should study their scanning and results flows to make Dewpoint's scan easier to use while staying accurate.
+
+**Cons**
+- Both apps are essentially single-feature — they only offer the skincare scanner and don't extend beyond it, aside from recommending their own product lines.
+- Neither has a routine adherence, ingredient conflict, or progress-tracking layer, which is exactly the gap Dewpoint can exploit by being a well-rounded skincare tracking app instead of a scan-then-upsell tool.
+
+---
