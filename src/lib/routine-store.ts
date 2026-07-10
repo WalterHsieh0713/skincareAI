@@ -1,23 +1,61 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   canRestore,
   EMPTY_STATE,
   repairableDay,
+  type RoutineLog,
   type RoutinePart,
   type RoutineState,
   type ScanDaySet,
 } from '@/lib/routine';
 import { dayKeyOf } from '@/lib/scan-types';
 
-/** Native in-memory store (no persistence yet); web persists to localStorage. */
+/** Native store: in-memory mirror backed by AsyncStorage so adherence + restores survive an app restart. */
+const STORAGE_KEY = 'dewpoint-routines';
+
 let state: RoutineState = EMPTY_STATE;
+let loaded = false;
 const listeners = new Set<() => void>();
 
 function emit() {
   listeners.forEach((listener) => listener());
 }
 
+function ensureLoaded() {
+  if (loaded) {
+    return;
+  }
+  loaded = true;
+  AsyncStorage.getItem(STORAGE_KEY)
+    .then((raw) => {
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw) as unknown;
+      // Migrate the legacy shape (a bare RoutineLog) to { log, restored }.
+      if (parsed && typeof parsed === 'object' && 'log' in parsed) {
+        const next = parsed as RoutineState;
+        state = { log: next.log ?? {}, restored: next.restored ?? {} };
+      } else {
+        state = { log: (parsed as RoutineLog) ?? {}, restored: {} };
+      }
+      emit();
+    })
+    .catch(() => {
+      /* corrupt/unavailable storage — start empty */
+    });
+}
+
+function persist() {
+  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {
+    /* ignore quota/availability errors */
+  });
+}
+
 export function subscribe(listener: () => void): () => void {
   listeners.add(listener);
+  ensureLoaded();
   return () => listeners.delete(listener);
 }
 
@@ -39,6 +77,7 @@ export function submitPart(part: RoutinePart): void {
     ...state,
     log: { ...state.log, [day]: { ...current, [part]: true } },
   };
+  persist();
   emit();
 }
 
@@ -52,5 +91,6 @@ export function restoreStreak(scanDays: ScanDaySet): void {
     return;
   }
   state = { ...state, restored: { ...state.restored, [day]: now } };
+  persist();
   emit();
 }

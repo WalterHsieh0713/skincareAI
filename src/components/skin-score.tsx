@@ -14,7 +14,7 @@ export function AxisBar({ label, value }: { label: string; value: number }) {
       <View style={styles.axisLabelRow}>
         <ThemedText type="small">{label}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {value > 0 ? value : '—'}
+          {value}
         </ThemedText>
       </View>
       <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>

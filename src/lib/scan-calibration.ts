@@ -16,6 +16,8 @@ const UNAVAILABLE_QUALITY: ScanQuality = {
     brightness: 0,
     evenness: 0,
     sharpness: 0,
+    shadowFrac: 0,
+    highlightFrac: 0,
   },
   guidance: 'Scan calibration is available on web for now.',
 };

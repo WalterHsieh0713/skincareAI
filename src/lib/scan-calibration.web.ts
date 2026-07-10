@@ -14,10 +14,16 @@ import type {
  * reaches the scorer. Only captures that pass are scored and saved, so the
  * timeline compares like with like.
  *
- * Runs entirely on the browser canvas (no network, no model download). The skin
- * classifier here is the same heuristic the scorer uses; the documented seam at
- * `detectFace()` is where a MediaPipe FaceLandmarker can drop in for true
- * landmark-based framing/alignment without changing callers.
+ * Runs entirely on the browser canvas (no network, no model download). The
+ * documented seam at `detectFace()` is where a MediaPipe FaceLandmarker can
+ * drop in for true landmark-based framing/alignment without changing callers.
+ *
+ * NOTE: the skin classifier here has intentionally DIVERGED from the copy in
+ * `scan-image.web.ts` (the scorer). This file's `isSkin()` was made
+ * chrominance-based (tone-invariant) to fix a fairness bug where the old
+ * shared absolute-luminance-floor rule made capture validation systematically
+ * harder to pass for darker skin tones. The scorer's copy hasn't been ported
+ * yet — that's a tracked follow-up, not an oversight.
  */
 
 // --- Calibration constants (tuned against the canvas pipeline at WORK px) ---
@@ -28,8 +34,38 @@ const MAX_OUT = 1024; // cap stored/scored image so calibration stays cheap
 const MIN_FACE_FILL = 0.1; // skin must cover ≥10% of frame
 const NO_FACE_FILL = 0.04; // below this, treat as "no face at all"
 const MAX_CENTER_OFFSET = 0.26; // skin centroid must sit near the middle
-const MIN_BRIGHTNESS = 60; // mean skin luminance floor (0–255)
-const MAX_BRIGHTNESS = 212; // ceiling before highlights blow out
+// Exposure is judged by clipping, not raw mean luminance — a fixed mean-luminance
+// window conflates "bad lighting" with "the subject's natural skin reflectance,"
+// systematically penalizing darker or lighter skin tones under IDENTICAL lighting.
+// Clipping fraction (pixels crushed near-black/blown near-white) isolates genuine
+// under/over-exposure regardless of tone.
+// These must sit well inside isSkin()'s own sanity floor/ceiling (sum<20, lum>250),
+// not next to it — otherwise a genuinely clipped pixel gets excluded from the skin
+// mask by isSkin() before it can ever be counted as "shadow"/"highlight" here,
+// leaving these gates unable to fire. The gap between them is deliberate headroom.
+// HIGHLIGHT_LUM must also stay well under ~210-220: with 8-bit channels, ANY
+// skin-consistent hue ratio saturates its dominant (red) channel at 255 by
+// around that luminance, so a pixel can't stay hue-recognizable as "skin" much
+// brighter than that regardless of tone — there's no usable window above it.
+const SHADOW_LUM = 30; // below this, a pixel has no recoverable tonal detail
+const HIGHLIGHT_LUM = 210; // above this, a pixel is blown out
+const MAX_SHADOW_CLIP = 0.15; // >15% of face pixels crushed near-black → too-dark
+// Looser than MAX_SHADOW_CLIP: with 8-bit channels, natural specular highlights
+// (nose bridge, cheekbones) on a genuinely well-lit face — lighter skin
+// especially — can otherwise false-positive against a tight threshold here,
+// since there's an inherently narrow band between "normal highlight" and
+// "blown out" at the high end (see HIGHLIGHT_LUM comment above).
+//
+// Known residual limitation (see plan notes): synthetic testing showed a very
+// light-skinned face at a high but genuinely well-lit raw mean luminance
+// (~200+, pre-calibration) can still trip this gate on natural highlight
+// variance alone, where the old mean-luminance gate would have passed it.
+// This reflects a real 8-bit-channel ceiling, not a bug in this fix — the
+// dark-skin bias this was built to fix is confirmed closed by synthetic
+// testing across a much wider range; this bright-end edge needs a real-device
+// tuning pass (per the plan) before treating SHADOW_LUM/HIGHLIGHT_LUM/these
+// clip fractions as final.
+const MAX_HIGHLIGHT_CLIP = 0.25; // >25% blown out → too-bright
 const MIN_EVENNESS = 0.6; // 1 = flat light, lower = harsh side/top light
 const MIN_SHARPNESS = 14; // Laplacian variance floor — below = blurry
 
@@ -67,18 +103,34 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Same skin rule the scorer uses — keep them in lockstep. */
+/**
+ * Chrominance-based skin test: normalize away overall brightness (`r/sum`,
+ * `g/sum`) before judging hue, so the same rule applies whether the frame is
+ * a dark-skinned face in bright light or a light-skinned face in dim light —
+ * their hue RATIO can match even though their absolute RGB values don't. The
+ * old rule gated on absolute floors (`r>50`, `lum>40`), which scale with
+ * brightness rather than hue, so it silently doubled as a brightness gate
+ * that penalized darker skin. The luminance check here is only a loose sanity
+ * bound (reject true sensor black/white clipping), not a skin-tone floor.
+ *
+ * The saturation check is normalized (`chroma/sum`), not absolute, for the
+ * same reason: an absolute `max-min` floor shrinks toward zero as brightness
+ * drops for any fixed hue, so it would silently reintroduce a brightness-
+ * dependent floor at the low end (rejecting genuinely-colored dark skin as
+ * "too gray" well before it's actually gray).
+ */
 function isSkin(r: number, g: number, b: number, lum: number): boolean {
+  const sum = r + g + b;
+  if (sum < 20 || lum > 250) return false;
+  const nr = r / sum;
+  const ng = g / sum;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  return (
-    r > 50 && g > 30 && b > 20 && r >= g && g >= b * 0.9 &&
-    max - min > 10 && lum > 40 && lum < 235
-  );
+  const saturation = (max - min) / sum;
+  return nr > 0.36 && nr < 0.47 && ng > 0.28 && ng < 0.40 && nr > ng && saturation > 0.04;
 }
 
 type FaceStats = {
-  mask: Uint8Array;
   count: number;
   sumR: number;
   sumG: number;
@@ -91,6 +143,18 @@ type FaceStats = {
   rightLum: number;
   topLum: number;
   bottomLum: number;
+  shadowFrac: number;
+  highlightFrac: number;
+};
+
+type ComponentAccum = {
+  count: number;
+  sumR: number; sumG: number; sumB: number; sumLum: number;
+  sumX: number; sumY: number;
+  leftLum: number; leftN: number; rightLum: number; rightN: number;
+  topLum: number; topN: number; bottomLum: number; bottomN: number;
+  touchesTop: boolean; touchesBottom: boolean; touchesLeft: boolean; touchesRight: boolean;
+  shadowN: number; highlightN: number;
 };
 
 /**
@@ -98,41 +162,96 @@ type FaceStats = {
  * validators and calibrator need. SEAM: swap this for a landmark detector
  * (MediaPipe FaceLandmarker) to get a true face box/mesh — the return shape is
  * all downstream code depends on.
+ *
+ * A skin-toned background (a wall, wood door, a hand) commonly passes the same
+ * color heuristic as the face. Averaging over every matching pixel in the
+ * frame would let that background pull the centroid back toward the middle
+ * even when the actual face sits off to one side — silently defeating the
+ * off-center check. So stats are computed from connected components (flood
+ * fill) of skin pixels, picking the largest one that does NOT touch all four
+ * frame edges: enveloping background wraps around and touches every edge,
+ * while a properly framed face doesn't (even if hair or a shoulder clips one
+ * edge in a normal selfie). A component that wraps the whole frame is
+ * excluded outright rather than risking its centroid as "the face."
  */
 function detectFace(data: Uint8ClampedArray, n: number): FaceStats {
-  const mask = new Uint8Array(n * n);
-  let count = 0;
-  let sumR = 0, sumG = 0, sumB = 0, sumLum = 0;
-  let sumX = 0, sumY = 0;
-  let leftLum = 0, leftN = 0, rightLum = 0, rightN = 0;
-  let topLum = 0, topN = 0, bottomLum = 0, bottomN = 0;
-  const half = n / 2;
+  const size = n * n;
+  const skin = new Uint8Array(size);
+  const rArr = new Float32Array(size);
+  const gArr = new Float32Array(size);
+  const bArr = new Float32Array(size);
+  const lumArr = new Float32Array(size);
 
-  for (let y = 0, p = 0; y < n; y++) {
-    for (let x = 0; x < n; x++, p++) {
-      const i = p * 4;
-      const r = data[i], g = data[i + 1], b = data[i + 2];
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      if (!isSkin(r, g, b, lum)) continue;
-      mask[p] = 1;
-      count++;
-      sumR += r; sumG += g; sumB += b; sumLum += lum;
-      sumX += x; sumY += y;
-      if (x < half) { leftLum += lum; leftN++; } else { rightLum += lum; rightN++; }
-      if (y < half) { topLum += lum; topN++; } else { bottomLum += lum; bottomN++; }
+  for (let p = 0; p < size; p++) {
+    const i = p * 4;
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    rArr[p] = r; gArr[p] = g; bArr[p] = b; lumArr[p] = lum;
+    if (isSkin(r, g, b, lum)) skin[p] = 1;
+  }
+
+  const half = n / 2;
+  const visited = new Uint8Array(size);
+  const queue = new Int32Array(size);
+  let best: ComponentAccum | null = null;
+
+  for (let start = 0; start < size; start++) {
+    if (!skin[start] || visited[start]) continue;
+
+    let head = 0, tail = 0;
+    queue[tail++] = start;
+    visited[start] = 1;
+    const acc: ComponentAccum = {
+      count: 0, sumR: 0, sumG: 0, sumB: 0, sumLum: 0, sumX: 0, sumY: 0,
+      leftLum: 0, leftN: 0, rightLum: 0, rightN: 0, topLum: 0, topN: 0, bottomLum: 0, bottomN: 0,
+      touchesTop: false, touchesBottom: false, touchesLeft: false, touchesRight: false,
+      shadowN: 0, highlightN: 0,
+    };
+
+    while (head < tail) {
+      const p = queue[head++];
+      const x = p % n;
+      const y = (p - x) / n;
+      acc.count++;
+      acc.sumR += rArr[p]; acc.sumG += gArr[p]; acc.sumB += bArr[p]; acc.sumLum += lumArr[p];
+      acc.sumX += x; acc.sumY += y;
+      if (lumArr[p] < SHADOW_LUM) acc.shadowN++;
+      if (lumArr[p] > HIGHLIGHT_LUM) acc.highlightN++;
+      if (x < half) { acc.leftLum += lumArr[p]; acc.leftN++; } else { acc.rightLum += lumArr[p]; acc.rightN++; }
+      if (y < half) { acc.topLum += lumArr[p]; acc.topN++; } else { acc.bottomLum += lumArr[p]; acc.bottomN++; }
+      if (x === 0) acc.touchesLeft = true;
+      if (x === n - 1) acc.touchesRight = true;
+      if (y === 0) acc.touchesTop = true;
+      if (y === n - 1) acc.touchesBottom = true;
+
+      if (x > 0) { const q = p - 1; if (skin[q] && !visited[q]) { visited[q] = 1; queue[tail++] = q; } }
+      if (x < n - 1) { const q = p + 1; if (skin[q] && !visited[q]) { visited[q] = 1; queue[tail++] = q; } }
+      if (y > 0) { const q = p - n; if (skin[q] && !visited[q]) { visited[q] = 1; queue[tail++] = q; } }
+      if (y < n - 1) { const q = p + n; if (skin[q] && !visited[q]) { visited[q] = 1; queue[tail++] = q; } }
+    }
+
+    const wrapsFrame = acc.touchesTop && acc.touchesBottom && acc.touchesLeft && acc.touchesRight;
+    if (wrapsFrame) {
+      // Enveloping background (e.g. a skin-toned wall filling the frame) — never a face candidate.
+      continue;
+    }
+    if (!best || acc.count > best.count) {
+      best = acc;
     }
   }
 
+  const count = best?.count ?? 0;
   return {
-    mask,
     count,
-    sumR, sumG, sumB, sumLum,
-    cx: count ? sumX / count / n : 0.5,
-    cy: count ? sumY / count / n : 0.5,
-    leftLum: leftN ? leftLum / leftN : 0,
-    rightLum: rightN ? rightLum / rightN : 0,
-    topLum: topN ? topLum / topN : 0,
-    bottomLum: bottomN ? bottomLum / bottomN : 0,
+    sumR: best?.sumR ?? 0, sumG: best?.sumG ?? 0, sumB: best?.sumB ?? 0, sumLum: best?.sumLum ?? 0,
+    cx: count ? best!.sumX / count / n : 0.5,
+    cy: count ? best!.sumY / count / n : 0.5,
+    leftLum: best?.leftN ? best.leftLum / best.leftN : 0,
+    rightLum: best?.rightN ? best.rightLum / best.rightN : 0,
+    topLum: best?.topN ? best.topLum / best.topN : 0,
+    bottomLum: best?.bottomN ? best.bottomLum / best.bottomN : 0,
+    shadowFrac: count ? (best?.shadowN ?? 0) / count : 0,
+    highlightFrac: count ? (best?.highlightN ?? 0) / count : 0,
   };
 }
 
@@ -177,8 +296,8 @@ function validate(metrics: ScanMetrics): ScanQuality {
   if (metrics.faceFill >= NO_FACE_FILL && metrics.centerOffset > MAX_CENTER_OFFSET) {
     issues.push('off-center');
   }
-  if (metrics.brightness < MIN_BRIGHTNESS) issues.push('too-dark');
-  if (metrics.brightness > MAX_BRIGHTNESS) issues.push('too-bright');
+  if (metrics.shadowFrac > MAX_SHADOW_CLIP) issues.push('too-dark');
+  if (metrics.highlightFrac > MAX_HIGHLIGHT_CLIP) issues.push('too-bright');
   if (metrics.faceFill >= NO_FACE_FILL && metrics.evenness < MIN_EVENNESS) {
     issues.push('uneven-lighting');
   }
@@ -207,6 +326,8 @@ export function assessFrame(raw: Uint8ClampedArray, n: number): ScanQuality {
     brightness,
     evenness: evennessFrom(face),
     sharpness: laplacianVariance(raw, n),
+    shadowFrac: face.shadowFrac,
+    highlightFrac: face.highlightFrac,
   };
   return validate(metrics);
 }
@@ -224,7 +345,10 @@ export function assessVideoFrame(video: HTMLVideoElement): ScanQuality {
     liveCtx = liveCanvas.getContext('2d', { willReadFrequently: true });
   }
   if (!liveCtx || !video.videoWidth || !video.videoHeight) {
-    return validate({ faceFill: 0, centerOffset: 1, brightness: 0, evenness: 0, sharpness: 0 });
+    return validate({
+      faceFill: 0, centerOffset: 1, brightness: 0, evenness: 0, sharpness: 0,
+      shadowFrac: 0, highlightFrac: 0,
+    });
   }
   const size = Math.min(video.videoWidth, video.videoHeight);
   const offsetX = (video.videoWidth - size) / 2;
@@ -255,6 +379,7 @@ export async function calibrateScan(dataUrl: string): Promise<CalibratedScan> {
       dataUrl,
       quality: validate({
         faceFill: 0, centerOffset: 1, brightness: 0, evenness: 0, sharpness: 0,
+        shadowFrac: 0, highlightFrac: 0,
       }),
     };
   }
