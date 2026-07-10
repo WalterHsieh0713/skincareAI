@@ -154,6 +154,34 @@ export const ptBR: Messages = {
     eduNote:
       'Educação geral sobre ~80 ativos e bases comuns — não é um veredito personalizado sobre nenhum produto, nem conselho médico.',
   },
+  recommendations: {
+    title: 'Ingredientes e tipos de produto sugeridos',
+    reason: {
+      redness: 'A vermelhidão pareceu mais visível neste escaneamento.',
+      texture: 'A textura pareceu um pouco mais áspera neste escaneamento.',
+      blemishes: 'As imperfeições pareceram mais visíveis neste escaneamento.',
+      hydration: 'A hidratação pareceu mais baixa que o normal neste escaneamento.',
+    },
+    productType: {
+      bhaCleanser: 'um limpador com BHA (ácido salicílico)',
+      nonComedogenicMoisturizer: 'um hidratante não comedogênico',
+      spotTreatment: 'um tratamento localizado para espinhas',
+      fragranceFreeMoisturizer: 'um hidratante sem fragrância, reparador de barreira',
+      gentleCleanser: 'um limpador suave que não resseca',
+      soothingSerum: 'um sérum calmante para vermelhidão',
+      ahaExfoliant: 'um esfoliante com AHA, usado algumas vezes por semana',
+      retinoidSerum: 'um sérum com retinoide, introduzido gradualmente',
+      hydratingSerum: 'um sérum com ácido hialurônico',
+      ceramideMoisturizer: 'um hidratante rico em ceramidas',
+      humectantToner: 'um tônico ou essência rico em umectantes',
+    },
+    checkIngredients: 'Verificar um produto no Verificador de Ingredientes',
+    allGoodTitle: 'Nada elevado neste escaneamento',
+    allGoodBody:
+      'Todos os eixos estão em uma boa faixa em relação à sua própria base — continue com sua rotina.',
+    disclaimer:
+      'Sugestões educativas baseadas nesta foto — não é um diagnóstico nem conselho médico. Procure um dermatologista para problemas graves ou que não melhoram.',
+  },
   progress: {
     title: 'Progresso',
     subtitle: 'Mudança lenta e invisível — tornada perceptível.',

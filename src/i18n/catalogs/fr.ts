@@ -154,6 +154,34 @@ export const fr: Messages = {
     eduNote:
       'Éducation générale sur ~80 actifs et bases courants — pas un verdict personnalisé sur un produit, ni un avis médical.',
   },
+  recommendations: {
+    title: 'Ingrédients et types de produits suggérés',
+    reason: {
+      redness: 'Les rougeurs semblaient plus visibles sur ce scan.',
+      texture: 'La texture semblait un peu plus rugueuse sur ce scan.',
+      blemishes: 'Les imperfections semblaient plus visibles sur ce scan.',
+      hydration: 'L’hydratation semblait plus basse que d’habitude sur ce scan.',
+    },
+    productType: {
+      bhaCleanser: 'un nettoyant au BHA (acide salicylique)',
+      nonComedogenicMoisturizer: 'une crème hydratante non comédogène',
+      spotTreatment: 'un soin ciblé anti-imperfections',
+      fragranceFreeMoisturizer: 'une crème hydratante sans parfum, réparatrice de barrière',
+      gentleCleanser: 'un nettoyant doux qui ne décape pas',
+      soothingSerum: 'un sérum apaisant contre les rougeurs',
+      ahaExfoliant: 'un exfoliant AHA, utilisé quelques fois par semaine',
+      retinoidSerum: 'un sérum au rétinoïde, introduit progressivement',
+      hydratingSerum: 'un sérum à l’acide hyaluronique',
+      ceramideMoisturizer: 'une crème hydratante riche en céramides',
+      humectantToner: 'une lotion ou essence riche en humectants',
+    },
+    checkIngredients: 'Vérifier un produit dans le vérificateur d’ingrédients',
+    allGoodTitle: 'Rien d’élevé sur ce scan',
+    allGoodBody:
+      'Tous les axes sont dans une bonne fourchette par rapport à votre propre référence — continuez votre routine.',
+    disclaimer:
+      'Suggestions éducatives basées sur cette photo — pas un diagnostic ni un avis médical. Consultez un dermatologue en cas de problème sévère ou persistant.',
+  },
   progress: {
     title: 'Progrès',
     subtitle: 'Un changement lent et invisible — rendu perceptible.',

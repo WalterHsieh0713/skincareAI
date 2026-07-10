@@ -146,6 +146,33 @@ export const zhHans: Messages = {
     eduNote:
       '关于约 80 种常见活性与基质成分的通用科普——并非对任何产品的个性化结论，也非医疗建议。',
   },
+  recommendations: {
+    title: '推荐成分与产品类型',
+    reason: {
+      redness: '本次扫描中泛红看起来更明显。',
+      texture: '本次扫描中肤质看起来略显粗糙。',
+      blemishes: '本次扫描中痘痘/瑕疵看起来更明显。',
+      hydration: '本次扫描中水分看起来低于平时。',
+    },
+    productType: {
+      bhaCleanser: '含 BHA（水杨酸）的洁面产品',
+      nonComedogenicMoisturizer: '不致粉刺的保湿产品',
+      spotTreatment: '局部祛痘产品',
+      fragranceFreeMoisturizer: '无香精、修护屏障的保湿产品',
+      gentleCleanser: '温和不刺激的洁面产品',
+      soothingSerum: '舒缓泛红的精华',
+      ahaExfoliant: '每周使用几次的 AHA 焕肤产品',
+      retinoidSerum: '循序渐进使用的视黄醇精华',
+      hydratingSerum: '含玻尿酸的精华',
+      ceramideMoisturizer: '富含神经酰胺的保湿产品',
+      humectantToner: '富含保湿因子的爽肤水/精华露',
+    },
+    checkIngredients: '在成分检查器中查看产品',
+    allGoodTitle: '本次扫描没有明显问题',
+    allGoodBody: '所有维度相对于你自己的基线都处于良好范围——继续保持你的护肤习惯。',
+    disclaimer:
+      '基于本次照片的科普性建议，并非诊断或医疗建议。如问题严重或持续未改善，请咨询皮肤科医生。',
+  },
   progress: {
     title: '进展',
     subtitle: '让缓慢、看不见的变化被感知。',

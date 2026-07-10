@@ -149,6 +149,33 @@ export const ko: Messages = {
     eduNote:
       '약 80가지 일반 활성·베이스 성분에 대한 일반 교육입니다 — 특정 제품에 대한 개인화된 판정이나 의학적 조언이 아닙니다.',
   },
+  recommendations: {
+    title: '추천 성분 및 제품 유형',
+    reason: {
+      redness: '이번 스캔에서 붉은기가 더 두드러져 보였어요.',
+      texture: '이번 스캔에서 결이 조금 더 거칠어 보였어요.',
+      blemishes: '이번 스캔에서 트러블이 더 눈에 띄었어요.',
+      hydration: '이번 스캔에서 수분감이 평소보다 낮아 보였어요.',
+    },
+    productType: {
+      bhaCleanser: 'BHA(살리실산) 클렌저',
+      nonComedogenicMoisturizer: '논코메도제닉 보습제',
+      spotTreatment: '집중 스팟 케어 제품',
+      fragranceFreeMoisturizer: '무향, 장벽 강화 보습제',
+      gentleCleanser: '자극이 적은 순한 클렌저',
+      soothingSerum: '붉은기를 진정시키는 세럼',
+      ahaExfoliant: '주 몇 회 사용하는 AHA 각질 제거제',
+      retinoidSerum: '천천히 시작하는 레티노이드 세럼',
+      hydratingSerum: '히알루론산 세럼',
+      ceramideMoisturizer: '세라마이드가 풍부한 보습제',
+      humectantToner: '보습 성분이 풍부한 토너·에센스',
+    },
+    checkIngredients: '성분 체커에서 제품 확인하기',
+    allGoodTitle: '이번 스캔에서 특별히 두드러진 항목 없음',
+    allGoodBody: '모든 항목이 나의 기준선 대비 좋은 범위예요 — 루틴을 계속 유지하세요.',
+    disclaimer:
+      '이 사진을 바탕으로 한 교육용 제안이며 진단이나 의학적 조언이 아닙니다. 증상이 심하거나 나아지지 않으면 피부과 전문의와 상담하세요.',
+  },
   progress: {
     title: '경과',
     subtitle: '느리고 보이지 않는 변화를 느낄 수 있게.',

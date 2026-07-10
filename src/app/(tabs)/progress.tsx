@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { SkinRecommendationsView } from '@/components/skin-recommendations';
 import { SkinScoreView } from '@/components/skin-score';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -119,6 +120,12 @@ export default function ProgressScreen() {
           {t('progress.indicatorsNote')}
         </ThemedText>
       </Card>
+
+      {latest ? (
+        <Card>
+          <SkinRecommendationsView scores={latest.scores} />
+        </Card>
+      ) : null}
 
       <Card title={t('progress.insightTitle')}>
         <ThemedText>{insight}</ThemedText>

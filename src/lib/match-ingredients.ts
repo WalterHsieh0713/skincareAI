@@ -27,6 +27,7 @@ const CATEGORY_ORDER = [
   'AHA',
   'BHA',
   'PHA',
+  'Antimicrobial',
   'Retinoid',
   'Vitamin C',
   'Vitamin',

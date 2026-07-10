@@ -154,6 +154,34 @@ export const es: Messages = {
     eduNote:
       'Educación general sobre ~80 activos y bases comunes; no es un veredicto personalizado sobre ningún producto ni consejo médico.',
   },
+  recommendations: {
+    title: 'Ingredientes y tipos de producto sugeridos',
+    reason: {
+      redness: 'La rojez se vio más visible en este escaneo.',
+      texture: 'La textura se vio un poco más áspera en este escaneo.',
+      blemishes: 'Las imperfecciones se vieron más visibles en este escaneo.',
+      hydration: 'La hidratación se vio más baja de lo habitual en este escaneo.',
+    },
+    productType: {
+      bhaCleanser: 'un limpiador con BHA (ácido salicílico)',
+      nonComedogenicMoisturizer: 'una crema hidratante no comedogénica',
+      spotTreatment: 'un tratamiento localizado para granos',
+      fragranceFreeMoisturizer: 'una crema hidratante sin fragancia y reparadora de barrera',
+      gentleCleanser: 'un limpiador suave que no reseca',
+      soothingSerum: 'un sérum calmante para la rojez',
+      ahaExfoliant: 'un exfoliante con AHA, usado unas veces por semana',
+      retinoidSerum: 'un sérum con retinoide, introducido gradualmente',
+      hydratingSerum: 'un sérum con ácido hialurónico',
+      ceramideMoisturizer: 'una crema hidratante rica en ceramidas',
+      humectantToner: 'un tónico o esencia rica en humectantes',
+    },
+    checkIngredients: 'Consulta un producto en el verificador de ingredientes',
+    allGoodTitle: 'Nada elevado en este escaneo',
+    allGoodBody:
+      'Todos los ejes están en un buen rango frente a tu propia base — sigue con tu rutina.',
+    disclaimer:
+      'Sugerencias educativas basadas en esta foto, no un diagnóstico ni consejo médico. Consulta a un dermatólogo si el problema es grave o no mejora.',
+  },
   progress: {
     title: 'Progreso',
     subtitle: 'Cambio lento e invisible, hecho perceptible.',

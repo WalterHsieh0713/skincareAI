@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { CameraCapture } from '@/components/camera-capture';
+import { SkinRecommendationsView } from '@/components/skin-recommendations';
 import { SkinScoreView } from '@/components/skin-score';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -137,6 +138,12 @@ export default function ScanScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             {t('scan.savedNote')}
           </ThemedText>
+        </Card>
+      ) : null}
+
+      {scores && !busy ? (
+        <Card>
+          <SkinRecommendationsView scores={scores} />
         </Card>
       ) : null}
 

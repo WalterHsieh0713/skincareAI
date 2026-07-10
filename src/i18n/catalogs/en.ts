@@ -107,14 +107,17 @@ export const en: Messages = {
     frontPreview: 'Front camera preview',
     rearPreview: 'Rear camera preview',
     denied: 'Camera permission was blocked. Allow it in your browser, then retry.',
+    deniedNative: 'Camera permission was blocked. Enable it for Dewpoint in your device Settings, then retry.',
     notFound: 'No camera was found, or it is already in use by another app.',
     unsupported: 'This browser does not support camera access.',
+    unsupportedNative: "Camera isn't available on this device.",
     capture: 'Capture',
     retake: 'Retake',
     retryCamera: 'Retry camera',
     startScan: 'Start guided scan',
     useScan: 'Use this scan',
     faceFound: 'Face found — you can capture now.',
+    captureThenCheck: 'Take the photo — Dewpoint checks framing and lighting right after.',
   },
   routine: {
     title: 'Routine',
@@ -178,6 +181,34 @@ export const en: Messages = {
     identifyBtn: 'Identify ingredients',
     eduNote:
       'General ingredient education across ~80 common actives and base ingredients — not a personalized verdict on any product, and not medical advice.',
+  },
+  recommendations: {
+    title: 'Suggested ingredients & product types',
+    reason: {
+      redness: 'Redness looked more visible in this scan.',
+      texture: 'Texture looked a bit rougher in this scan.',
+      blemishes: 'Blemishes looked more visible in this scan.',
+      hydration: 'Hydration looked lower than usual in this scan.',
+    },
+    productType: {
+      bhaCleanser: 'a BHA (salicylic acid) cleanser',
+      nonComedogenicMoisturizer: 'a non-comedogenic moisturizer',
+      spotTreatment: 'a targeted spot treatment',
+      fragranceFreeMoisturizer: 'a fragrance-free, barrier-repair moisturizer',
+      gentleCleanser: 'a gentle, non-stripping cleanser',
+      soothingSerum: 'a soothing, redness-calming serum',
+      ahaExfoliant: 'an AHA exfoliant, used a few times a week',
+      retinoidSerum: 'a retinoid serum, introduced gradually',
+      hydratingSerum: 'a hyaluronic acid serum',
+      ceramideMoisturizer: 'a ceramide-rich moisturizer',
+      humectantToner: 'a humectant-rich toner or essence',
+    },
+    checkIngredients: 'Check a product in the Ingredient Checker',
+    allGoodTitle: 'Nothing elevated this scan',
+    allGoodBody:
+      'Every axis is in a good range against your own baseline — keep up your routine.',
+    disclaimer:
+      'Educational suggestions based on this photo — not a diagnosis or medical advice. See a dermatologist for concerns that are severe or don’t improve.',
   },
   progress: {
     title: 'Progress',

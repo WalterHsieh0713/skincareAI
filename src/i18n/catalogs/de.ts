@@ -154,6 +154,34 @@ export const de: Messages = {
     eduNote:
       'Allgemeine Aufklärung zu ~80 gängigen Wirk- und Basisstoffen — kein personalisiertes Urteil zu einem Produkt und keine medizinische Beratung.',
   },
+  recommendations: {
+    title: 'Vorgeschlagene Inhaltsstoffe & Produkttypen',
+    reason: {
+      redness: 'Rötungen wirkten in diesem Scan stärker sichtbar.',
+      texture: 'Die Textur wirkte in diesem Scan etwas rauer.',
+      blemishes: 'Unreinheiten wirkten in diesem Scan stärker sichtbar.',
+      hydration: 'Die Feuchtigkeit wirkte in diesem Scan niedriger als sonst.',
+    },
+    productType: {
+      bhaCleanser: 'ein Reinigungsprodukt mit BHA (Salicylsäure)',
+      nonComedogenicMoisturizer: 'eine nicht komedogene Feuchtigkeitscreme',
+      spotTreatment: 'eine gezielte Punktbehandlung',
+      fragranceFreeMoisturizer: 'eine duftstofffreie, barrierestärkende Feuchtigkeitscreme',
+      gentleCleanser: 'ein mildes Reinigungsprodukt, das die Haut nicht austrocknet',
+      soothingSerum: 'ein beruhigendes Serum gegen Rötungen',
+      ahaExfoliant: 'ein AHA-Peeling, einige Male pro Woche verwendet',
+      retinoidSerum: 'ein Retinoid-Serum, langsam eingeführt',
+      hydratingSerum: 'ein Serum mit Hyaluronsäure',
+      ceramideMoisturizer: 'eine ceramidreiche Feuchtigkeitscreme',
+      humectantToner: 'ein feuchtigkeitsspendendes Toner oder Essence',
+    },
+    checkIngredients: 'Produkt im Inhaltsstoff-Check prüfen',
+    allGoodTitle: 'Nichts auffällig in diesem Scan',
+    allGoodBody:
+      'Alle Achsen liegen im guten Bereich gegenüber deiner eigenen Basis — mach weiter mit deiner Routine.',
+    disclaimer:
+      'Bildungsvorschläge basierend auf diesem Foto — keine Diagnose und keine medizinische Beratung. Bei starken oder anhaltenden Beschwerden einen Dermatologen aufsuchen.',
+  },
   progress: {
     title: 'Fortschritt',
     subtitle: 'Langsame, unsichtbare Veränderung — spürbar gemacht.',

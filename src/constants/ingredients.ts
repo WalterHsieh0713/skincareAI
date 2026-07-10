@@ -14,6 +14,7 @@ export type IngredientCategory =
   | 'BHA'
   | 'PHA'
   | 'Retinoid'
+  | 'Antimicrobial'
   | 'Vitamin C'
   | 'Vitamin'
   | 'Antioxidant'
@@ -109,6 +110,16 @@ export const INGREDIENTS: Ingredient[] = [
     category: 'BHA',
     function: 'Gently exfoliates pores',
     active: true,
+  },
+
+  // ── Antimicrobial acne actives ────────────────────────────────────────────
+  {
+    name: 'Benzoyl Peroxide',
+    aliases: ['benzoyl peroxide'],
+    category: 'Antimicrobial',
+    function: 'Kills acne-causing bacteria to clear breakouts',
+    active: true,
+    concern: 'Can bleach fabric/hair; drying — introduce slowly.',
   },
 
   // ── Exfoliating acids: PHA ────────────────────────────────────────────────

@@ -149,6 +149,33 @@ export const ja: Messages = {
     eduNote:
       '約80の一般的な有効成分・ベース成分に関する一般教育です — 特定製品への個別判定や医療助言ではありません。',
   },
+  recommendations: {
+    title: 'おすすめの成分・製品タイプ',
+    reason: {
+      redness: '今回のスキャンでは赤みが目立って見えました。',
+      texture: '今回のスキャンでは肌のキメがやや粗く見えました。',
+      blemishes: '今回のスキャンでは吹き出物が目立って見えました。',
+      hydration: '今回のスキャンではうるおいがいつもより低く見えました。',
+    },
+    productType: {
+      bhaCleanser: 'BHA（サリチル酸）配合の洗顔料',
+      nonComedogenicMoisturizer: 'ノンコメドジェニックの保湿剤',
+      spotTreatment: '部分用のスポットケア',
+      fragranceFreeMoisturizer: '無香料でバリア機能をケアする保湿剤',
+      gentleCleanser: '肌に優しい低刺激の洗顔料',
+      soothingSerum: '赤みを鎮める鎮静セラム',
+      ahaExfoliant: '週に数回使うAHA配合の角質ケア',
+      retinoidSerum: '少量から始めるレチノイド配合セラム',
+      hydratingSerum: 'ヒアルロン酸配合のセラム',
+      ceramideMoisturizer: 'セラミド配合の保湿剤',
+      humectantToner: '保湿成分が豊富な化粧水・美容液',
+    },
+    checkIngredients: '成分チェッカーで製品を調べる',
+    allGoodTitle: '今回は特に気になる項目はありません',
+    allGoodBody: 'すべての項目が自分のベースラインに対して良好な範囲です。ルーティンを続けましょう。',
+    disclaimer:
+      'この写真に基づく教育的な提案であり、診断や医療助言ではありません。症状が重い、または改善しない場合は皮膚科医に相談してください。',
+  },
   progress: {
     title: '経過',
     subtitle: 'ゆっくりと目に見えない変化を、実感できる形に。',
