@@ -5,6 +5,8 @@
 
 **Before every session, before Sean types any prompt:** read this entire CLAUDE.md file, load `Sean.md` to understand who Sean is, and load `MEMORY.md` (the project memory index) plus any files it links to. Treat the contents below as standing context for all work in this repo.
 
+**Also at the start of every session, automatically (no need to ask first):** launch the Dewpoint dev server and get it in front of Sean on both web and his phone, by following `workflows/launch_dev_server.md` in full — start the server in **tunnel mode** (not plain LAN mode; this machine's Wi-Fi has client/AP isolation that breaks direct LAN connections to Expo Go), then generate and show the QR code via `tools/generate_qr.py`. If a server is already running on port 8081 from a prior turn this session, don't relaunch it — just confirm it's still up.
+
 ---
 
 # Who You Are

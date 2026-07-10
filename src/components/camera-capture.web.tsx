@@ -18,12 +18,10 @@ type CameraStatus =
   | 'unsupported';
 
 // Worst-first order so live coaching targets the single most important fix
-// (mirrors the same ordering used post-capture in scan.tsx).
+// (mirrors the same ordering used post-capture in scan.tsx). Only the checks
+// still active in scan-calibration.web.ts's validate() can ever appear here.
 const ISSUE_PRIORITY: ScanQualityIssue[] = [
   'no-face',
-  'blurry',
-  'too-dark',
-  'too-bright',
   'uneven-lighting',
   'face-too-small',
   'off-center',

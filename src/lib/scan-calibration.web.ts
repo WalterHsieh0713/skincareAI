@@ -34,40 +34,12 @@ const MAX_OUT = 1024; // cap stored/scored image so calibration stays cheap
 const MIN_FACE_FILL = 0.1; // skin must cover ≥10% of frame
 const NO_FACE_FILL = 0.04; // below this, treat as "no face at all"
 const MAX_CENTER_OFFSET = 0.26; // skin centroid must sit near the middle
-// Exposure is judged by clipping, not raw mean luminance — a fixed mean-luminance
-// window conflates "bad lighting" with "the subject's natural skin reflectance,"
-// systematically penalizing darker or lighter skin tones under IDENTICAL lighting.
-// Clipping fraction (pixels crushed near-black/blown near-white) isolates genuine
-// under/over-exposure regardless of tone.
-// These must sit well inside isSkin()'s own sanity floor/ceiling (sum<20, lum>250),
-// not next to it — otherwise a genuinely clipped pixel gets excluded from the skin
-// mask by isSkin() before it can ever be counted as "shadow"/"highlight" here,
-// leaving these gates unable to fire. The gap between them is deliberate headroom.
-// HIGHLIGHT_LUM must also stay well under ~210-220: with 8-bit channels, ANY
-// skin-consistent hue ratio saturates its dominant (red) channel at 255 by
-// around that luminance, so a pixel can't stay hue-recognizable as "skin" much
-// brighter than that regardless of tone — there's no usable window above it.
+// SHADOW_LUM/HIGHLIGHT_LUM still feed shadowFrac/highlightFrac on ScanMetrics
+// (used by calibration's exposure gain), but no longer gate validation —
+// too-dark/too-bright were dropped as gates per product feedback (too sensitive).
 const SHADOW_LUM = 30; // below this, a pixel has no recoverable tonal detail
 const HIGHLIGHT_LUM = 210; // above this, a pixel is blown out
-const MAX_SHADOW_CLIP = 0.15; // >15% of face pixels crushed near-black → too-dark
-// Looser than MAX_SHADOW_CLIP: with 8-bit channels, natural specular highlights
-// (nose bridge, cheekbones) on a genuinely well-lit face — lighter skin
-// especially — can otherwise false-positive against a tight threshold here,
-// since there's an inherently narrow band between "normal highlight" and
-// "blown out" at the high end (see HIGHLIGHT_LUM comment above).
-//
-// Known residual limitation (see plan notes): synthetic testing showed a very
-// light-skinned face at a high but genuinely well-lit raw mean luminance
-// (~200+, pre-calibration) can still trip this gate on natural highlight
-// variance alone, where the old mean-luminance gate would have passed it.
-// This reflects a real 8-bit-channel ceiling, not a bug in this fix — the
-// dark-skin bias this was built to fix is confirmed closed by synthetic
-// testing across a much wider range; this bright-end edge needs a real-device
-// tuning pass (per the plan) before treating SHADOW_LUM/HIGHLIGHT_LUM/these
-// clip fractions as final.
-const MAX_HIGHLIGHT_CLIP = 0.25; // >25% blown out → too-bright
-const MIN_EVENNESS = 0.6; // 1 = flat light, lower = harsh side/top light
-const MIN_SHARPNESS = 14; // Laplacian variance floor — below = blurry
+const MIN_EVENNESS = 0.35; // loosened per product feedback: only catch harsh/lopsided light, not minor unevenness
 
 // Normalization targets.
 const TARGET_LUMA = 170; // exposure-normalize skin toward this mean
@@ -84,11 +56,13 @@ const GUIDANCE: Record<ScanQualityIssue, string> = {
 };
 
 // Issues are reported worst-first so the UI can coach the single best fix.
+// Per product feedback, capture validation was too sensitive: only the
+// minimum lighting-consistency check and face-centering/framing remain
+// active. too-dark/too-bright/blurry stay in ScanQualityIssue for type
+// parity (metrics still record shadowFrac/highlightFrac/sharpness) but
+// validate() never pushes them.
 export const ISSUE_PRIORITY: ScanQualityIssue[] = [
   'no-face',
-  'blurry',
-  'too-dark',
-  'too-bright',
   'uneven-lighting',
   'face-too-small',
   'off-center',
@@ -230,9 +204,14 @@ function detectFace(data: Uint8ClampedArray, n: number): FaceStats {
       if (y < n - 1) { const q = p + n; if (skin[q] && !visited[q]) { visited[q] = 1; queue[tail++] = q; } }
     }
 
-    const wrapsFrame = acc.touchesTop && acc.touchesBottom && acc.touchesLeft && acc.touchesRight;
+    // Enveloping background (e.g. a skin-toned wall) never needs to touch all
+    // four edges to wrap the face — a wall showing on both sides, or above and
+    // below, spans an opposite edge pair while a torso/shirt/hair blocks just
+    // one of the remaining two, so it can slip past an all-four-edges check.
+    // Spanning either opposite pair is enough to disqualify it as a candidate.
+    const wrapsFrame =
+      (acc.touchesLeft && acc.touchesRight) || (acc.touchesTop && acc.touchesBottom);
     if (wrapsFrame) {
-      // Enveloping background (e.g. a skin-toned wall filling the frame) — never a face candidate.
       continue;
     }
     if (!best || acc.count > best.count) {
@@ -296,12 +275,9 @@ function validate(metrics: ScanMetrics): ScanQuality {
   if (metrics.faceFill >= NO_FACE_FILL && metrics.centerOffset > MAX_CENTER_OFFSET) {
     issues.push('off-center');
   }
-  if (metrics.shadowFrac > MAX_SHADOW_CLIP) issues.push('too-dark');
-  if (metrics.highlightFrac > MAX_HIGHLIGHT_CLIP) issues.push('too-bright');
   if (metrics.faceFill >= NO_FACE_FILL && metrics.evenness < MIN_EVENNESS) {
     issues.push('uneven-lighting');
   }
-  if (metrics.sharpness < MIN_SHARPNESS) issues.push('blurry');
 
   const worst = ISSUE_PRIORITY.find((issue) => issues.includes(issue)) ?? null;
   return {
