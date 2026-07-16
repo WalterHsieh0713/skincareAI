@@ -1,14 +1,15 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSegments } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { Platform, ScrollView, StyleSheet, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/app-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { BottomTabInset, Glow, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useResolvedColorScheme } from '@/hooks/use-resolved-scheme';
 
 type ScreenProps = {
   /** Per-page heading (e.g. "Routine", "Scan"). Omit on screens that only need
@@ -22,16 +23,21 @@ type ScreenProps = {
 };
 
 /**
- * Scrollable, theme-aware page wrapper shared by every Dewpoint tab.
- * Handles safe-area insets, the floating tab bar offset, and max content width
- * so individual screens only describe their content, plus the page-specific
- * heading. On native, `AppHeader` (wordmark/streak/settings) renders here for
+ * Scrollable, theme-aware page wrapper shared by every Dewpoint tab. Paints
+ * a soft top-down glow — light fading into the flat page background, like a
+ * spotlight from above — rather than a flat color or a corner-to-corner
+ * wash. Handles safe-area insets, the floating tab bar offset, and max
+ * content width so individual screens only describe their content, plus the
+ * page-specific heading.
+ *
+ * On native, `AppHeader` (wordmark/streak/settings) renders here for
  * `(tabs)` screens only, once per screen — `NativeTabs` must own its screen
  * directly (wrapping it with a sibling header broke the native tab bar
  * entirely), so each tab screen renders its own copy instead of sharing one
  * above the navigator. Settings/routine-editor screens already have a native
- * Stack header and opt out via the `(tabs)` segment check.
- * On web, `AppHeader` still renders once above the tab pill in `app-tabs.web.tsx`.
+ * Stack header and opt out via the `(tabs)` segment check. On web, `AppHeader`
+ * still renders once above the tab pill in `app-tabs.web.tsx`.
+ *
  * Resets scroll to top whenever the screen regains focus (switching tabs
  * used to leave scroll position stale).
  */
@@ -43,7 +49,7 @@ export function Screen({
   hideHeader = false,
 }: ScreenProps) {
   const safeAreaInsets = useSafeAreaInsets();
-  const theme = useTheme();
+  const scheme = useResolvedColorScheme();
   const scrollRef = useRef<ScrollView>(null);
   const isTabScreen = useSegments()[0] === '(tabs)';
 
@@ -74,16 +80,21 @@ export function Screen({
   });
 
   return (
-    <>
+    <View style={styles.root}>
+      <LinearGradient
+        colors={[Glow[scheme][0], Glow[scheme][1], Glow[scheme][1]]}
+        locations={[0, 0.7, 1]}
+        style={StyleSheet.absoluteFill}
+      />
       {Platform.OS !== 'web' && isTabScreen && <AppHeader />}
       <ScrollView
         ref={scrollRef}
-        style={[styles.scrollView, { backgroundColor: theme.background }]}
+        style={styles.scrollView}
         contentInset={insets}
         contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-        <ThemedView style={[styles.container, contentStyle]}>
+        <ThemedView style={[styles.container, contentStyle, styles.transparent]}>
           {hideHeader ? null : (
-            <ThemedView style={styles.header}>
+            <ThemedView style={[styles.header, styles.transparent]}>
               {title ? (
                 <ThemedText type="subtitle" style={styles.headerTitle}>
                   {title}
@@ -97,11 +108,14 @@ export function Screen({
           {children}
         </ThemedView>
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
@@ -122,5 +136,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flexShrink: 1,
+  },
+  transparent: {
+    backgroundColor: 'transparent',
   },
 });

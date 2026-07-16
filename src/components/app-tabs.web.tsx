@@ -12,7 +12,8 @@ import { AppHeader } from './app-header';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Glow, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useResolvedColorScheme } from '@/hooks/use-resolved-scheme';
 import { useTranslation } from '@/hooks/use-translation';
 
 const TABS = [
@@ -30,8 +31,9 @@ const TABS = [
  */
 export default function AppTabs() {
   const { t } = useTranslation();
+  const scheme = useResolvedColorScheme();
   return (
-    <Tabs style={styles.root}>
+    <Tabs style={[styles.root, { backgroundColor: Glow[scheme][0] }]}>
       <AppHeader />
       <TabList asChild>
         <CustomTabList>

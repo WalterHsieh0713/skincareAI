@@ -19,7 +19,7 @@ export function AxisBar({ label, value }: { label: string; value: number }) {
       </View>
       <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
         <View
-          style={[styles.fill, { width: `${value}%`, backgroundColor: theme.text }]}
+          style={[styles.fill, { width: `${value}%`, backgroundColor: theme.accent }]}
         />
       </View>
     </View>

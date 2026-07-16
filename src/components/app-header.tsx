@@ -4,9 +4,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { GradientText } from '@/components/ui/gradient-text';
+import {
+  FontFamily,
+  Glow,
+  MaxContentWidth,
+  Spacing,
+  WordmarkGradient,
+  WordmarkGradientDirection,
+} from '@/constants/theme';
+import { useResolvedColorScheme } from '@/hooks/use-resolved-scheme';
 import { useRoutine } from '@/hooks/use-routine';
-import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 
 /** Flame streak badge — shows current consecutive-day routine streak, links to /routine. */
@@ -55,20 +63,25 @@ function SettingsGear() {
  */
 export function AppHeader() {
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
+  const scheme = useResolvedColorScheme();
 
   return (
     <ThemedView
       style={[
         styles.wrapper,
-        { backgroundColor: theme.background, paddingLeft: insets.left, paddingRight: insets.right },
+        { backgroundColor: Glow[scheme][0], paddingLeft: insets.left, paddingRight: insets.right },
         Platform.select({
           web: { paddingTop: Spacing.four },
           default: { paddingTop: insets.top + Spacing.two },
         }),
       ]}>
       <View style={styles.row}>
-        <ThemedText type="wordmark">Dewpoint</ThemedText>
+        <GradientText
+          colors={WordmarkGradient[scheme]}
+          direction={WordmarkGradientDirection[scheme]}
+          style={styles.wordmark}>
+          Dewpoint
+        </GradientText>
         <View style={styles.actions}>
           <StreakBadge />
           <SettingsGear />
@@ -84,6 +97,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.four,
     paddingBottom: Spacing.three,
+  },
+  wordmark: {
+    fontFamily: FontFamily.displayBold,
+    fontSize: 45,
+    lineHeight: 60,
+    paddingBottom: 8,
   },
   row: {
     width: '100%',

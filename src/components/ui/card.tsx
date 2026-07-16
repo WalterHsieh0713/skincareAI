@@ -1,7 +1,7 @@
-import { StyleSheet, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { GlassView } from '@/components/ui/glass-view';
 import { Spacing } from '@/constants/theme';
 
 type CardProps = {
@@ -13,12 +13,12 @@ type CardProps = {
   style?: ViewStyle;
 };
 
-/** Rounded surface used to group content on a screen. */
+/** Rounded, frosted-glass surface used to group content on a screen. */
 export function Card({ title, hint, action, children, style }: CardProps) {
   return (
-    <ThemedView type="backgroundElement" style={[styles.card, style]}>
+    <GlassView style={[styles.card, styles.shadow, style]}>
       {title ? (
-        <ThemedView type="backgroundElement" style={styles.titleRow}>
+        <View style={styles.titleRow}>
           <ThemedText type="smallBold">{title}</ThemedText>
           {action ? (
             action
@@ -27,10 +27,10 @@ export function Card({ title, hint, action, children, style }: CardProps) {
               {hint}
             </ThemedText>
           ) : null}
-        </ThemedView>
+        </View>
       ) : null}
       {children}
-    </ThemedView>
+    </GlassView>
   );
 }
 
@@ -39,6 +39,13 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.four,
     padding: Spacing.four,
     gap: Spacing.three,
+  },
+  shadow: {
+    shadowColor: '#FFB7C5',
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 1,
   },
   titleRow: {
     flexDirection: 'row',
