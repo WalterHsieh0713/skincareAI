@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { ScoreTrendLine } from '@/components/score-trend-line';
 import { SkinRecommendationsView } from '@/components/skin-recommendations';
 import { SkinScoreView } from '@/components/skin-score';
 import { ThemedText } from '@/components/themed-text';
@@ -130,6 +131,15 @@ export default function ProgressScreen() {
       <Card title={t('progress.insightTitle')}>
         <ThemedText>{insight}</ThemedText>
       </Card>
+
+      {scans.length > 1 ? (
+        <Card title={t('progress.trendTitle')} hint={t('progress.trendHint')}>
+          <ScoreTrendLine
+            points={scans.map((s) => ({ dayKey: s.dayKey, overall: s.scores.overall }))}
+            height={140}
+          />
+        </Card>
+      ) : null}
 
       <Card title={t('progress.timelapseTitle')}>
         {/* Range toggle: Weekly / Monthly */}

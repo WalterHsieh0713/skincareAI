@@ -5,6 +5,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { OcrWebViewHost } from '@/components/ocr-webview-host';
 import { Colors } from '@/constants/theme';
 import { useResolvedColorScheme } from '@/hooks/use-resolved-scheme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -33,6 +34,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
+      <OcrWebViewHost />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
@@ -41,7 +43,10 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding/welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/profile" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/products" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/first-scan" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/routine" options={{ headerShown: false }} />
         <Stack.Screen name="routine-editor" options={{ title: t('routine.editRoutine') }} />
         <Stack.Screen name="settings/index" options={{ title: t('nav.settings') }} />

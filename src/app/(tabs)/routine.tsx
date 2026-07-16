@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -61,13 +61,22 @@ function Step({ label }: { label: string }) {
   );
 }
 
+const SAVED_CONFIRM_MS = 700;
+
 export default function RoutineScreen() {
   const { today, submitAM, submitPM } = useRoutine();
   const { config } = useRoutineConfig();
   const { t } = useTranslation();
+  const [justSaved, setJustSaved] = useState<RoutinePart | null>(null);
+
   const submitters: Record<RoutinePart, () => void> = {
     am: submitAM,
     pm: submitPM,
+  };
+  const submitAndReturn = (part: RoutinePart) => {
+    submitters[part]();
+    setJustSaved(part);
+    setTimeout(() => router.replace('/'), SAVED_CONFIRM_MS);
   };
   const bothDone = today.am && today.pm;
 
@@ -129,18 +138,22 @@ export default function RoutineScreen() {
                 steps.map((step, index) => <Step key={`${step}-${index}`} label={step} />)
               )}
             </ThemedView>
-            <Button
-              label={
-                submitted
-                  ? t('routine.submittedBtn', { title })
-                  : locked
-                    ? t('routine.locked', { window: windowLabel(part) })
-                    : t('routine.submit', { title })
-              }
-              disabled={submitted || locked}
-              onPress={submitters[part]}
-              style={submitted || locked ? styles.submitted : undefined}
-            />
+            {justSaved === part ? (
+              <ThemedText type="smallBold">{t('routine.savedConfirm')}</ThemedText>
+            ) : (
+              <Button
+                label={
+                  submitted
+                    ? t('routine.submittedBtn', { title })
+                    : locked
+                      ? t('routine.locked', { window: windowLabel(part) })
+                      : t('routine.submit', { title })
+                }
+                disabled={submitted || locked}
+                onPress={() => submitAndReturn(part)}
+                style={submitted || locked ? styles.submitted : undefined}
+              />
+            )}
           </Card>
         );
       })}

@@ -46,7 +46,11 @@ export default function HomeScreen() {
           {t('home.trackedSelf')}
         </ThemedText>
         <Link href="/scan" asChild>
-          <Button label={latest ? t('home.takeToday') : t('home.takeFirst')} />
+          <Button
+            label={scannedToday ? t('home.scanDoneToday') : latest ? t('home.takeToday') : t('home.takeFirst')}
+            disabled={scannedToday}
+            style={scannedToday ? styles.scanBlurred : undefined}
+          />
         </Link>
       </Card>
 
@@ -159,5 +163,8 @@ const styles = StyleSheet.create({
   },
   quickButton: {
     flex: 1,
+  },
+  scanBlurred: {
+    opacity: 0.4,
   },
 });

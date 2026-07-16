@@ -1,12 +1,15 @@
-export const ocrSupported = false;
+import { runOcr } from '@/lib/ocr-native-bridge';
+
+export const ocrSupported = true;
 
 /**
- * Native placeholder. On-device OCR is wired up on web (`ocr.web.ts`);
- * native would use a vision/ML module, which isn't installed yet.
+ * Native OCR, via the hidden WebView host (`ocr-webview-host.tsx`, mounted
+ * once at the app root) running the same tesseract.js engine `ocr.web.ts`
+ * uses in the browser — no custom native module, so the app stays in Expo Go.
  */
 export async function recognizeText(
-  _image: string,
-  _onProgress?: (progress: number) => void,
+  image: string,
+  onProgress?: (progress: number) => void,
 ): Promise<string> {
-  throw new Error('Label OCR is only available on web for now.');
+  return runOcr(image, onProgress);
 }

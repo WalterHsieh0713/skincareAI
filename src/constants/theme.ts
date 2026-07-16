@@ -27,6 +27,8 @@ export const Colors = {
     accent: '#F2C7C7',
     accentSoft: '#FBE7E4',
     border: 'rgba(214, 130, 130, 0.22)',
+    /** Score-improved indicator only (e.g. "+3 vs last scan") — a muted sage so it reads as "good" without importing stark green into the blossom palette. */
+    positive: '#7C9473',
   },
   dark: {
     text: '#FBF2F2',
@@ -37,6 +39,8 @@ export const Colors = {
     accent: '#FFC4D1',
     accentSoft: '#F2C7C7',
     border: 'rgba(255, 255, 255, 0.1)',
+    /** Score-improved indicator only (e.g. "+3 vs last scan") — a muted sage so it reads as "good" without importing stark green into the blossom palette. */
+    positive: '#9BBF8F',
   },
 } as const;
 
