@@ -7,8 +7,8 @@ Project memory for **Dewpoint** (skincare coaching app). Loaded at the start of 
 - [Dewpoint progress log](dewpoint-progress-log.md) — running log of dev sessions and what got done
 
 ## Project location
-- App root: `C:\Users\sean\Desktop\Claude\Dewpoint`
-- Stack: Expo SDK 56 + Expo Router (file-based routing), React Native 0.85, React 19. Read the versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing code.
+- App root: `c:\Users\user\OneDrive\桌面\claude_test\skincareAI`
+- Stack: Expo SDK 54 (downgraded from 56) + Expo Router (file-based routing), React Native, React 19. Read the versioned docs at https://docs.expo.dev/versions/v54.0.0/ before writing code.
 
 ## Where the app code lives (the whole `src/` folder)
 - **Entry point**: `package.json` → `"main": "expo-router/entry"` → loads the `src/app/` folder.
