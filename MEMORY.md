@@ -7,7 +7,7 @@ Project memory for **Dewpoint** (skincare coaching app). Loaded at the start of 
 - [Dewpoint progress log](dewpoint-progress-log.md) — running log of dev sessions and what got done
 
 ## Project location
-- App root: `c:\Users\user\OneDrive\桌面\claude_test\skincareAI`
+- App root: `C:\Users\user\dev\skincareAI` (moved 2026-07-15 out of OneDrive — the old `OneDrive\桌面\...` path caused `node_modules` sync-conflict corruption; keep this repo outside any OneDrive-synced folder)
 - Stack: Expo SDK 54 (downgraded from 56) + Expo Router (file-based routing), React Native, React 19. Read the versioned docs at https://docs.expo.dev/versions/v54.0.0/ before writing code.
 
 ## Where the app code lives (the whole `src/` folder)

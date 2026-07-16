@@ -9,6 +9,11 @@ metadata:
 
 Running progress log for the Dewpoint skincare app.
 
+**2026-07-15 (moved repo out of OneDrive):**
+- **Root cause of dev-server crashes:** the repo lived at `C:\Users\user\OneDrive\桌面\claude_test\skincareAI` — OneDrive syncs the Windows Desktop (`桌面`) by default (Known Folder Move), so every `npm install` raced OneDrive's sync and left `node_modules` full of conflict-renamed files (`*-LAPTOP-QKF2NF58.*`, 1,106 of them at worst). Symptom looked like an Expo SDK mismatch (`getOriginalEnvValue is not a function`) but was actually corrupted/missing files (e.g. `resolve/lib/core.js` gone entirely).
+- **Fix:** moved the whole repo (via `robocopy /MOVE`, `.git` intact, `node_modules`/`.expo` excluded and rebuilt fresh) to `C:\Users\user\dev\skincareAI` — outside any OneDrive-synced folder. Ran a clean `npm install` there; verified zero conflict files and no `invalid`/`extraneous` entries in `npm ls`.
+- **Standing rule:** never put this repo (or any Node project) under `OneDrive\桌面\...` or another OneDrive-synced path — `node_modules` churns too fast for OneDrive to sync safely. See [[dewpoint-launch-local]].
+
 **2026-07-10 (post-scan recommendations):**
 - **Post-scan ingredient/product-type recommendations (Feature 2 → 4 bridge):** built by the `junior-app-developer` subagent, committed as `188ae1c`. After each scan (and on Progress for the latest scan), axes scoring below `RECOMMENDATION_THRESHOLD = 70` get brand-neutral ingredient suggestions + generic product types (blemishes → salicylic acid/benzoyl peroxide/etc.; redness → cica/azelaic; texture → AHAs/retinoids; hydration → HA/ceramides), with a link to the Ingredient Checker and a not-medical-advice disclaimer; all-good scans show a positive state. New: `src/constants/recommendations.ts`, `src/lib/recommendations.ts`, `src/components/skin-recommendations.tsx`, shared `src/components/ingredient-row.tsx` (extracted from ingredients.tsx). Added Benzoyl Peroxide (new `Antimicrobial` category) to the INCI DB. Strings in all 9 catalogs. Follow-ups: the Ingredient Checker link doesn't prefill recommended ingredients (no router-params pattern yet under typedRoutes); per-axis threshold tuning once real scan data exists.
 
