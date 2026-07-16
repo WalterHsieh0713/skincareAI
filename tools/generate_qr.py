@@ -9,6 +9,14 @@ part of that same interactive UI -- it never appears in the log text at all
 but no URL). So this doesn't scrape the log; instead it reads the tunnel
 host directly from ngrok's own local admin API (which Expo's tunnel mode
 runs on `localhost:4040`), then renders that as a PNG.
+
+QR rendering shells out to `npx qrcode` (the npm package) rather than
+Python's `qrcode`/Pillow: on this machine's MSYS2 Python, pip refuses
+system-wide installs (PEP 668 externally-managed-environment) and even in a
+venv there's no prebuilt Pillow wheel for the `mingw_x86_64_msvcrt_gnu`
+platform tag, so it tries to compile from source and fails on missing zlib
+headers. `npx qrcode` needs nothing but the Node toolchain, which this repo
+already depends on.
 """
 
 import re
@@ -22,13 +30,6 @@ from pathlib import Path
 DEFAULT_OUT = Path(".expo/expo-go-qr.png")
 NGROK_API = "http://localhost:4040/api/tunnels"
 LOG_URL_PATTERN = re.compile(r"exp://\S+")
-
-
-def ensure_qrcode_installed():
-    try:
-        import qrcode  # noqa: F401
-    except ImportError:
-        subprocess.run([sys.executable, "-m", "pip", "install", "qrcode"], check=True)
 
 
 def find_tunnel_url(timeout: int = 180) -> str:
@@ -67,11 +68,12 @@ def find_url_in_log(log_path: Path, timeout: int = 180) -> str:
 
 
 def generate_qr(url: str, out_path: Path = DEFAULT_OUT) -> Path:
-    ensure_qrcode_installed()
-    import qrcode
-
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    qrcode.make(url).save(out_path)
+    npx = "npx.cmd" if sys.platform == "win32" else "npx"
+    subprocess.run(
+        [npx, "--yes", "qrcode", url, "-o", str(out_path)],
+        check=True,
+    )
     return out_path
 
 

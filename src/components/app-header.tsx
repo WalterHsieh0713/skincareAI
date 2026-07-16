@@ -46,11 +46,12 @@ function SettingsGear() {
 }
 
 /**
- * Persistent, app-wide top bar: the 60pt "Dewpoint" wordmark on the left,
- * streak badge + settings gear on the right — all on one row. Rendered once,
- * above the tab navigator (web: above the custom tab pill; native: above the
- * OS-controlled NativeTabs), so it never scrolls away and never duplicates
- * per-screen.
+ * App-wide top bar: the 60pt "Dewpoint" wordmark on the left, streak badge +
+ * settings gear on the right — all on one row. On web, rendered once above
+ * the custom tab pill in `app-tabs.web.tsx`. On native, `NativeTabs` must own
+ * its screen directly (a sibling header broke the native tab bar entirely),
+ * so `Screen` renders one copy per tab screen instead — each is outside that
+ * screen's ScrollView so it never scrolls away.
  */
 export function AppHeader() {
   const insets = useSafeAreaInsets();

@@ -70,4 +70,5 @@ on his phone — automatically, every session, with no manual steps on his end.
 - **Expo crashes on start**: Check `.expo/dev-server.log` for missing dependencies or config errors. Run `npx expo install` if needed.
 - **Multiple old processes**: `free_port.py` handles killing all PIDs on the port, not just the first.
 - **No `exp://` URL after 180s**: tunnel setup may be stuck on a first-time ngrok prompt — check `.expo/dev-server.log` directly for what it's waiting on.
-- **qrcode package missing**: `tools/generate_qr.py` auto-installs it via pip on first use.
+- **QR generation**: `tools/generate_qr.py` renders the PNG via `npx qrcode` (Node), not a Python package — pip on this machine's MSYS2 Python can't install `qrcode`/Pillow (PEP 668 externally-managed environment, no prebuilt wheel for its platform tag). `npx` fetches the npm package on first use.
+- **Never run this repo from inside a OneDrive-synced folder** (e.g. `OneDrive\桌面\...`) — OneDrive's sync races `npm install` and corrupts `node_modules` with conflict-renamed files, which then look like unrelated crashes (e.g. Expo CLI errors). Repo now lives at `C:\Users\user\dev\skincareAI`.

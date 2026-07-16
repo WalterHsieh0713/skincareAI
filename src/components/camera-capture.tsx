@@ -105,9 +105,6 @@ export function CameraCapture({
           height: side,
         });
       }
-      if (mirror) {
-        context.flip('horizontal');
-      }
       const rendered = await context.renderAsync();
       const saved = await rendered.saveAsync({
         format: SaveFormat.JPEG,
@@ -123,7 +120,7 @@ export function CameraCapture({
     } finally {
       setBusy(false);
     }
-  }, [autoConfirm, busy, crop, mirror, onCapture]);
+  }, [autoConfirm, busy, crop, onCapture]);
 
   const keep = useCallback(() => {
     if (photo) {
@@ -134,7 +131,6 @@ export function CameraCapture({
   const isLive = status === 'streaming';
   const showError = status === 'denied' || status === 'unsupported';
   const viewfinderRatio = crop === 'square' ? styles.viewfinderSquare : styles.viewfinderTall;
-  const previewStyle = mirror ? [styles.cover, styles.mirrored] : styles.cover;
 
   return (
     <View style={styles.container}>
@@ -145,7 +141,7 @@ export function CameraCapture({
           { backgroundColor: theme.backgroundSelected },
         ]}>
         {isLive ? (
-          <CameraView ref={cameraRef} facing={cameraType} style={previewStyle} />
+          <CameraView ref={cameraRef} facing={cameraType} mirror={mirror} style={styles.cover} />
         ) : null}
 
         {status === 'captured' && photo ? (
@@ -219,9 +215,6 @@ const styles = StyleSheet.create({
   cover: {
     width: '100%',
     height: '100%',
-  },
-  mirrored: {
-    transform: [{ scaleX: -1 }],
   },
   viewfinder: {
     width: '100%',

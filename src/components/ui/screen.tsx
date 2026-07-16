@@ -1,6 +1,10 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { useSegments } from 'expo-router';
+import { useCallback, useRef } from 'react';
 import { Platform, ScrollView, StyleSheet, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/app-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -20,9 +24,16 @@ type ScreenProps = {
 /**
  * Scrollable, theme-aware page wrapper shared by every Dewpoint tab.
  * Handles safe-area insets, the floating tab bar offset, and max content width
- * so individual screens only describe their content. The brand wordmark,
- * streak badge, and settings gear live in the persistent `AppHeader` above
- * the tab navigator, not here — this only renders the page-specific heading.
+ * so individual screens only describe their content, plus the page-specific
+ * heading. On native, `AppHeader` (wordmark/streak/settings) renders here for
+ * `(tabs)` screens only, once per screen — `NativeTabs` must own its screen
+ * directly (wrapping it with a sibling header broke the native tab bar
+ * entirely), so each tab screen renders its own copy instead of sharing one
+ * above the navigator. Settings/routine-editor screens already have a native
+ * Stack header and opt out via the `(tabs)` segment check.
+ * On web, `AppHeader` still renders once above the tab pill in `app-tabs.web.tsx`.
+ * Resets scroll to top whenever the screen regains focus (switching tabs
+ * used to leave scroll position stale).
  */
 export function Screen({
   title,
@@ -33,6 +44,14 @@ export function Screen({
 }: ScreenProps) {
   const safeAreaInsets = useSafeAreaInsets();
   const theme = useTheme();
+  const scrollRef = useRef<ScrollView>(null);
+  const isTabScreen = useSegments()[0] === '(tabs)';
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
 
   const insets = {
     ...safeAreaInsets,
@@ -41,7 +60,6 @@ export function Screen({
 
   const contentPlatformStyle = Platform.select({
     android: {
-      paddingTop: insets.top,
       paddingLeft: insets.left,
       paddingRight: insets.right,
       paddingBottom: insets.bottom,
@@ -56,26 +74,30 @@ export function Screen({
   });
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={[styles.container, contentStyle]}>
-        {hideHeader ? null : (
-          <ThemedView style={styles.header}>
-            {title ? (
-              <ThemedText type="subtitle" style={styles.headerTitle}>
-                {title}
-              </ThemedText>
-            ) : null}
-            {subtitle ? (
-              <ThemedText themeColor="textSecondary">{subtitle}</ThemedText>
-            ) : null}
-          </ThemedView>
-        )}
-        {children}
-      </ThemedView>
-    </ScrollView>
+    <>
+      {Platform.OS !== 'web' && isTabScreen && <AppHeader />}
+      <ScrollView
+        ref={scrollRef}
+        style={[styles.scrollView, { backgroundColor: theme.background }]}
+        contentInset={insets}
+        contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
+        <ThemedView style={[styles.container, contentStyle]}>
+          {hideHeader ? null : (
+            <ThemedView style={styles.header}>
+              {title ? (
+                <ThemedText type="subtitle" style={styles.headerTitle}>
+                  {title}
+                </ThemedText>
+              ) : null}
+              {subtitle ? (
+                <ThemedText themeColor="textSecondary">{subtitle}</ThemedText>
+              ) : null}
+            </ThemedView>
+          )}
+          {children}
+        </ThemedView>
+      </ScrollView>
+    </>
   );
 }
 

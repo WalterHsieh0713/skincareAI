@@ -32,14 +32,14 @@ const MAX_OUT = 1024; // cap stored/scored image so calibration stays cheap
 
 // Validation thresholds. Each maps directly to one ScanQualityIssue.
 const MIN_FACE_FILL = 0.1; // skin must cover ≥10% of frame
-const NO_FACE_FILL = 0.04; // below this, treat as "no face at all"
+const NO_FACE_FILL = 0.02; // loosened per Sean's feedback (2026-07-16): "no face detected" false-rejected real faces too often
 const MAX_CENTER_OFFSET = 0.26; // skin centroid must sit near the middle
 // SHADOW_LUM/HIGHLIGHT_LUM still feed shadowFrac/highlightFrac on ScanMetrics
 // (used by calibration's exposure gain), but no longer gate validation —
 // too-dark/too-bright were dropped as gates per product feedback (too sensitive).
 const SHADOW_LUM = 30; // below this, a pixel has no recoverable tonal detail
 const HIGHLIGHT_LUM = 210; // above this, a pixel is blown out
-const MIN_EVENNESS = 0.35; // loosened per product feedback: only catch harsh/lopsided light, not minor unevenness
+const MIN_EVENNESS = 0.22; // loosened further per Sean's feedback (2026-07-16): normal indoor lighting asymmetry was still tripping "uneven lighting"
 
 // Normalization targets.
 const TARGET_LUMA = 170; // exposure-normalize skin toward this mean
@@ -101,7 +101,10 @@ function isSkin(r: number, g: number, b: number, lum: number): boolean {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const saturation = (max - min) / sum;
-  return nr > 0.36 && nr < 0.47 && ng > 0.28 && ng < 0.40 && nr > ng && saturation > 0.04;
+  // Range widened per Sean's feedback (2026-07-16) — real faces under warm/cool
+  // indoor lighting were falling outside the old, tighter band. Still
+  // normalized (tone-invariant), so this doesn't reintroduce a brightness bias.
+  return nr > 0.33 && nr < 0.50 && ng > 0.24 && ng < 0.44 && nr > ng && saturation > 0.02;
 }
 
 type FaceStats = {

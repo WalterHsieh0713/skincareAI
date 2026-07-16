@@ -83,39 +83,40 @@ export default function ScanScreen() {
     <Screen title={t('scan.title')} subtitle={t('scan.subtitle')}>
       <Card>
         <CameraCapture onCapture={handleCapture} keepLabel={t('scan.keepLabel')} liveGuide autoConfirm />
-        <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-          {t('scan.scoredNote')}
-        </ThemedText>
-      </Card>
 
-      {busy ? (
-        <Card>
+        {busy ? (
           <View style={styles.busyRow}>
             <ActivityIndicator color={theme.text} />
             <ThemedText type="small" themeColor="textSecondary">
               {t('scan.scoring')}
             </ThemedText>
           </View>
-        </Card>
-      ) : null}
-
-      {quality && !quality.valid && !busy ? (
-        <Card title={t('scan.retakeTitle')} hint={t('scan.notScored')}>
-          <ThemedView type="backgroundElement" style={styles.guideList}>
-            {quality.issues.map((issue) => (
-              <View key={issue} style={styles.guideRow}>
-                <ThemedText themeColor="textSecondary">•</ThemedText>
-                <ThemedText type="small" style={styles.guideText}>
-                  {t(`scan.issue.${issue}`)}
-                </ThemedText>
-              </View>
-            ))}
+        ) : quality && !quality.valid ? (
+          <ThemedView type="backgroundSelected" style={styles.rejectionBlock}>
+            <ThemedText type="smallBold">{t('scan.retakeTitle')}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {t('scan.notScored')}
+            </ThemedText>
+            <ThemedView type="backgroundElement" style={styles.guideList}>
+              {quality.issues.map((issue) => (
+                <View key={issue} style={styles.guideRow}>
+                  <ThemedText themeColor="textSecondary">•</ThemedText>
+                  <ThemedText type="small" style={styles.guideText}>
+                    {t(`scan.issue.${issue}`)}
+                  </ThemedText>
+                </View>
+              ))}
+            </ThemedView>
+            {worstIssue ? (
+              <ThemedText type="small">{t(`scan.guidance.${worstIssue}`)}</ThemedText>
+            ) : null}
           </ThemedView>
-          {worstIssue ? (
-            <ThemedText type="small">{t(`scan.guidance.${worstIssue}`)}</ThemedText>
-          ) : null}
-        </Card>
-      ) : null}
+        ) : (
+          <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+            {t('scan.scoredNote')}
+          </ThemedText>
+        )}
+      </Card>
 
       {scores && !busy ? (
         <Card title={t('scan.yourScore')} hint={t('scan.calibrated')}>
@@ -178,6 +179,11 @@ const styles = StyleSheet.create({
   deltaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  rejectionBlock: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.two,
   },
   guideList: {
     gap: Spacing.two,

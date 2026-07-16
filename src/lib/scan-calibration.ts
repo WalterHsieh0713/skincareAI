@@ -35,11 +35,11 @@ const WORK = 256;
 const MAX_OUT = 1024;
 
 const MIN_FACE_FILL = 0.1;
-const NO_FACE_FILL = 0.04;
+const NO_FACE_FILL = 0.02; // loosened per Sean's feedback (2026-07-16): "no face detected" false-rejected real faces too often
 const MAX_CENTER_OFFSET = 0.26;
 const SHADOW_LUM = 30; // still feeds shadowFrac/highlightFrac on ScanMetrics, not a gate (see validate())
 const HIGHLIGHT_LUM = 210;
-const MIN_EVENNESS = 0.35;
+const MIN_EVENNESS = 0.22; // loosened further per Sean's feedback (2026-07-16): normal indoor lighting asymmetry was still tripping "uneven lighting"
 
 const TARGET_LUMA = 170;
 const MAX_GAIN = 1.8;
@@ -73,7 +73,8 @@ function isSkin(r: number, g: number, b: number, lum: number): boolean {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const saturation = (max - min) / sum;
-  return nr > 0.36 && nr < 0.47 && ng > 0.28 && ng < 0.40 && nr > ng && saturation > 0.04;
+  // Range widened per Sean's feedback (2026-07-16) — see scan-calibration.web.ts.
+  return nr > 0.33 && nr < 0.50 && ng > 0.24 && ng < 0.44 && nr > ng && saturation > 0.02;
 }
 
 type FaceStats = {
