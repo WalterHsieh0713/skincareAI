@@ -17,7 +17,7 @@ export type Settings = {
 };
 
 export const DEFAULT_SETTINGS: Settings = {
-  themePreference: 'system',
+  themePreference: 'light',
   language: 'en',
   username: 'dewdrop',
   email: 'you@example.com',

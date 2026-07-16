@@ -142,6 +142,11 @@ export const en: Messages = {
     editRoutine: 'Edit routine',
     noSteps: 'No steps yet — tap Edit to add some.',
   },
+  welcome: {
+    headline: 'Welcome to Dewpoint',
+    body: 'Create an account to save your scans, track your streak, and see your skin’s real trend over time.',
+    getStarted: 'Get Started',
+  },
   routineBuilder: {
     onboardTitle: 'Build your routine',
     onboardSubtitle:

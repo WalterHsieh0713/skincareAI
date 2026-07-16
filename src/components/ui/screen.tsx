@@ -1,10 +1,11 @@
-import { Platform, ScrollView, StyleSheet, type ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Platform, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { BottomTabInset, Glow, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useResolvedColorScheme } from '@/hooks/use-resolved-scheme';
 
 type ScreenProps = {
   /** Per-page heading (e.g. "Routine", "Scan"). Omit on screens that only need
@@ -18,11 +19,14 @@ type ScreenProps = {
 };
 
 /**
- * Scrollable, theme-aware page wrapper shared by every Dewpoint tab.
- * Handles safe-area insets, the floating tab bar offset, and max content width
- * so individual screens only describe their content. The brand wordmark,
- * streak badge, and settings gear live in the persistent `AppHeader` above
- * the tab navigator, not here — this only renders the page-specific heading.
+ * Scrollable, theme-aware page wrapper shared by every Dewpoint tab. Paints
+ * a soft top-down glow — light fading into the flat page background, like a
+ * spotlight from above — rather than a flat color or a corner-to-corner
+ * wash. Handles safe-area insets, the floating tab bar offset, and max
+ * content width so individual screens only describe their content. The
+ * brand wordmark, streak badge, and settings gear live in the persistent
+ * `AppHeader` above the tab navigator, not here — this only renders the
+ * page-specific heading.
  */
 export function Screen({
   title,
@@ -32,7 +36,7 @@ export function Screen({
   hideHeader = false,
 }: ScreenProps) {
   const safeAreaInsets = useSafeAreaInsets();
-  const theme = useTheme();
+  const scheme = useResolvedColorScheme();
 
   const insets = {
     ...safeAreaInsets,
@@ -56,30 +60,40 @@ export function Screen({
   });
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={[styles.container, contentStyle]}>
-        {hideHeader ? null : (
-          <ThemedView style={styles.header}>
-            {title ? (
-              <ThemedText type="subtitle" style={styles.headerTitle}>
-                {title}
-              </ThemedText>
-            ) : null}
-            {subtitle ? (
-              <ThemedText themeColor="textSecondary">{subtitle}</ThemedText>
-            ) : null}
-          </ThemedView>
-        )}
-        {children}
-      </ThemedView>
-    </ScrollView>
+    <View style={styles.root}>
+      <LinearGradient
+        colors={[Glow[scheme][0], Glow[scheme][1], Glow[scheme][1]]}
+        locations={[0, 0.7, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <ScrollView
+        style={styles.scrollView}
+        contentInset={insets}
+        contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
+        <ThemedView style={[styles.container, contentStyle, styles.transparent]}>
+          {hideHeader ? null : (
+            <ThemedView style={[styles.header, styles.transparent]}>
+              {title ? (
+                <ThemedText type="subtitle" style={styles.headerTitle}>
+                  {title}
+                </ThemedText>
+              ) : null}
+              {subtitle ? (
+                <ThemedText themeColor="textSecondary">{subtitle}</ThemedText>
+              ) : null}
+            </ThemedView>
+          )}
+          {children}
+        </ThemedView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
@@ -100,5 +114,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flexShrink: 1,
+  },
+  transparent: {
+    backgroundColor: 'transparent',
   },
 });

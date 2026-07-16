@@ -6,7 +6,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { useRoutine } from '@/hooks/use-routine';
 import { useScans } from '@/hooks/use-scans';
 import { useTranslation } from '@/hooks/use-translation';
@@ -136,9 +136,9 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   scoreValue: {
+    fontFamily: FontFamily.displayBold,
     fontSize: 64,
     lineHeight: 68,
-    fontWeight: '700',
   },
   scoreUnit: {
     fontSize: 16,
@@ -149,9 +149,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   streakValue: {
+    fontFamily: FontFamily.displayBold,
     fontSize: 40,
     lineHeight: 44,
-    fontWeight: '700',
   },
   quickRow: {
     flexDirection: 'row',

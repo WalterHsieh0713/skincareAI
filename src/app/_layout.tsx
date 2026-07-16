@@ -1,4 +1,7 @@
+import { Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
+import { Manrope_500Medium, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -16,6 +19,16 @@ export default function RootLayout() {
   const scheme = useResolvedColorScheme();
   const colors = Colors[scheme];
   const { t } = useTranslation();
+  const [fontsLoaded] = useFonts({
+    Fraunces_600SemiBold,
+    Fraunces_700Bold,
+    Manrope_500Medium,
+    Manrope_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -28,6 +41,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/welcome" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/routine" options={{ headerShown: false }} />
         <Stack.Screen name="routine-editor" options={{ title: t('routine.editRoutine') }} />
         <Stack.Screen name="settings/index" options={{ title: t('nav.settings') }} />
