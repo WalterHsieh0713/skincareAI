@@ -129,7 +129,7 @@ export default function RoutineScreen() {
                 <EditIcon />
               </View>
             }>
-            <ThemedView type="backgroundElement" style={styles.steps}>
+            <View style={styles.steps}>
               {steps.length === 0 ? (
                 <ThemedText type="small" themeColor="textSecondary">
                   {t('routine.noSteps')}
@@ -137,7 +137,7 @@ export default function RoutineScreen() {
               ) : (
                 steps.map((step, index) => <Step key={`${step}-${index}`} label={step} />)
               )}
-            </ThemedView>
+            </View>
             {justSaved === part ? (
               <ThemedText type="smallBold">{t('routine.savedConfirm')}</ThemedText>
             ) : (

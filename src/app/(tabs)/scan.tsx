@@ -132,7 +132,7 @@ export default function ScanScreen() {
       ) : null}
 
       <Card title={t('scan.beforeScan')}>
-        <ThemedView type="backgroundElement" style={styles.guideList}>
+        <View style={styles.guideList}>
           {CAPTURE_GUIDE_KEYS.map((key) => (
             <View key={key} style={styles.guideRow}>
               <ThemedText themeColor="textSecondary">•</ThemedText>
@@ -141,7 +141,7 @@ export default function ScanScreen() {
               </ThemedText>
             </View>
           ))}
-        </ThemedView>
+        </View>
         <ThemedText type="small" themeColor="textSecondary">
           {t('scan.normalizeNote')}
         </ThemedText>

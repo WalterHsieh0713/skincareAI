@@ -90,7 +90,6 @@ export function Screen({
       <ScrollView
         ref={scrollRef}
         style={styles.scrollView}
-        contentInset={insets}
         contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
         <ThemedView style={[styles.container, contentStyle, styles.transparent]}>
           {hideHeader ? null : (
@@ -114,7 +113,13 @@ export function Screen({
 
 const styles = StyleSheet.create({
   root: {
+    // height (not just flex) matters here — `NativeTabs`' content host
+    // doesn't reliably establish a flex context for its screen, so `flex: 1`
+    // alone can leave this View sized to its content and pinned to the
+    // bottom of a taller native container instead of filling it, exposing
+    // the OS window background (black in dark mode) above it.
     flex: 1,
+    height: '100%',
   },
   scrollView: {
     flex: 1,

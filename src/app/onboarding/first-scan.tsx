@@ -5,7 +5,6 @@ import { CameraCapture } from '@/components/camera-capture';
 import { SkinRecommendationsView } from '@/components/skin-recommendations';
 import { SkinScoreView } from '@/components/skin-score';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
@@ -62,7 +61,7 @@ export default function OnboardingFirstScanScreen() {
 
       {quality && !quality.valid && !busy ? (
         <Card title={t('scan.retakeTitle')} hint={t('scan.notScored')}>
-          <ThemedView type="backgroundElement" style={styles.guideList}>
+          <View style={styles.guideList}>
             {quality.issues.map((issue) => (
               <View key={issue} style={styles.guideRow}>
                 <ThemedText themeColor="textSecondary">•</ThemedText>
@@ -71,7 +70,7 @@ export default function OnboardingFirstScanScreen() {
                 </ThemedText>
               </View>
             ))}
-          </ThemedView>
+          </View>
           {worstIssue ? (
             <ThemedText type="small">{t(`scan.guidance.${worstIssue}`)}</ThemedText>
           ) : null}
@@ -92,7 +91,7 @@ export default function OnboardingFirstScanScreen() {
 
       {!scores ? (
         <Card title={t('scan.beforeScan')}>
-          <ThemedView type="backgroundElement" style={styles.guideList}>
+          <View style={styles.guideList}>
             {CAPTURE_GUIDE_KEYS.map((key) => (
               <View key={key} style={styles.guideRow}>
                 <ThemedText themeColor="textSecondary">•</ThemedText>
@@ -101,7 +100,7 @@ export default function OnboardingFirstScanScreen() {
                 </ThemedText>
               </View>
             ))}
-          </ThemedView>
+          </View>
         </Card>
       ) : null}
 
