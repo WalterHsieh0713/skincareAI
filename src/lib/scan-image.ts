@@ -7,6 +7,30 @@ function norm(value: number, lo: number, hi: number): number {
   return Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
 }
 
+/** 3x3 box blur — suppresses camera sensor noise/JPEG artifacts before the
+ * texture gradient is measured, so per-pixel noise doesn't dominate the signal. */
+function boxBlur3(lum: Float32Array, n: number): Float32Array {
+  const out = new Float32Array(n * n);
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      let sum = 0;
+      let count = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= n) continue;
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx;
+          if (xx < 0 || xx >= n) continue;
+          sum += lum[yy * n + xx];
+          count++;
+        }
+      }
+      out[y * n + x] = sum / count;
+    }
+  }
+  return out;
+}
+
 /**
  * Native scorer — ported verbatim (pure per-pixel math, no DOM dependency to
  * begin with) from `scan-image.web.ts`. Only pixel acquisition differs: a
@@ -57,7 +81,9 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
   const rednessMean = rednessSum / count;
   const lumMean = lumSum / count;
 
-  // Texture: average luminance gradient across considered pixels.
+  // Texture: average luminance gradient across considered pixels, measured on
+  // a blurred copy so sensor noise/compression artifacts don't dominate.
+  const lumSmooth = boxBlur3(lum, N);
   let gradSum = 0;
   let gradCount = 0;
   for (let y = 0; y < N - 1; y++) {
@@ -66,7 +92,7 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
       if (!useAll && !isSkin[p]) {
         continue;
       }
-      gradSum += Math.abs(lum[p] - lum[p + 1]) + Math.abs(lum[p] - lum[p + N]);
+      gradSum += Math.abs(lumSmooth[p] - lumSmooth[p + 1]) + Math.abs(lumSmooth[p] - lumSmooth[p + N]);
       gradCount++;
     }
   }
@@ -91,7 +117,11 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
   const blemishFrac = blemish / count;
 
   const redness = Math.round(100 * (1 - norm(rednessMean, 8, 55)));
-  const textureScore = Math.round(100 * (1 - norm(texture, 3, 22)));
+  // Same linear norm as the other three metrics (kept on the same scale so
+  // texture doesn't read artificially lower/higher than redness/blemishes/
+  // hydration for a comparable photo). Bounds are tuned for the post-blur
+  // gradient, which runs much smaller than the old pre-blur range (3-22).
+  const textureScore = Math.round(100 * (1 - norm(texture, 4, 34)));
   const blemishes = Math.round(100 * (1 - norm(blemishFrac, 0.01, 0.25)));
   const hydration = Math.round(100 * (1 - norm(lumStd, 16, 70)));
   const overall = Math.round((redness + textureScore + blemishes + hydration) / 4);

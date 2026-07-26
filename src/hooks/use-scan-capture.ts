@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useScans } from '@/hooks/use-scans';
 import { calibrateScan } from '@/lib/scan-calibration';
@@ -18,6 +18,18 @@ export function useScanCapture() {
   const [scores, setScores] = useState<SkinScores | null>(null);
   const [quality, setQuality] = useState<ScanQuality | null>(null);
   const [prevScore, setPrevScore] = useState<number | null>(null);
+
+  // Scan tabs stay mounted across tab switches, so a stale capture from
+  // earlier in the session would otherwise keep rendering after the scan
+  // history is cleared elsewhere (e.g. Progress tab's "Clear History").
+  // Once the store goes empty, drop any locally-held result to match.
+  useEffect(() => {
+    if (scans.length === 0) {
+      setScores(null);
+      setQuality(null);
+      setPrevScore(null);
+    }
+  }, [scans.length]);
 
   const capture = useCallback(
     async (dataUrl: string) => {
