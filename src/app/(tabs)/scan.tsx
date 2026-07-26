@@ -22,8 +22,8 @@ const TREND_WINDOW = 14;
 export default function ScanScreen() {
   const scans = useScans();
   const theme = useTheme();
-  const { t } = useTranslation();
-  const { busy, scores, quality, prevScore, capture } = useScanCapture();
+  const { t, tn } = useTranslation();
+  const { busy, scores, quality, prevScore, calibrating, scansUntilBaseline, capture } = useScanCapture();
 
   const scannedToday = scans.length > 0 && scans[scans.length - 1].dayKey === dayKeyOf(Date.now());
 
@@ -95,7 +95,9 @@ export default function ScanScreen() {
       ) : null}
 
       {scores && !busy ? (
-        <Card title={t('scan.yourScore')} hint={t('scan.calibrated')}>
+        <Card
+          title={t('scan.yourScore')}
+          hint={calibrating ? tn('scan.calibratingHint', scansUntilBaseline) : t('scan.calibrated')}>
           <SkinScoreView scores={scores} />
           {deltaLabel ? (
             <View style={styles.deltaRow}>
@@ -110,7 +112,7 @@ export default function ScanScreen() {
             <ScoreTrendLine points={trendPoints} />
           ) : null}
           <ThemedText type="small" themeColor="textSecondary">
-            {t('scan.disclaimerNote')}
+            {calibrating ? t('scan.calibratingNote') : t('scan.disclaimerNote')}
           </ThemedText>
           {quality ? (
             <ThemedText type="small" themeColor="textSecondary">

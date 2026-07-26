@@ -1,3 +1,4 @@
+import { isSkin } from '@/lib/skin-classify';
 import type {
   CalibratedScan,
   ScanMetrics,
@@ -18,12 +19,12 @@ import type {
  * documented seam at `detectFace()` is where a MediaPipe FaceLandmarker can
  * drop in for true landmark-based framing/alignment without changing callers.
  *
- * NOTE: the skin classifier here has intentionally DIVERGED from the copy in
- * `scan-image.web.ts` (the scorer). This file's `isSkin()` was made
- * chrominance-based (tone-invariant) to fix a fairness bug where the old
- * shared absolute-luminance-floor rule made capture validation systematically
- * harder to pass for darker skin tones. The scorer's copy hasn't been ported
- * yet — that's a tracked follow-up, not an oversight.
+ * The skin classifier is shared with the scorer (`scan-image.web.ts`) via
+ * `@/lib/skin-classify` — chrominance-based (tone-invariant), fixing a
+ * fairness bug where an absolute-luminance-floor rule made both capture
+ * validation and scoring systematically harder to pass for darker skin
+ * tones. Keep this a single import on both sides; don't reintroduce a
+ * per-file copy that can drift.
  */
 
 // --- Calibration constants (tuned against the canvas pipeline at WORK px) ---
@@ -75,36 +76,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = reject;
     image.src = src;
   });
-}
-
-/**
- * Chrominance-based skin test: normalize away overall brightness (`r/sum`,
- * `g/sum`) before judging hue, so the same rule applies whether the frame is
- * a dark-skinned face in bright light or a light-skinned face in dim light —
- * their hue RATIO can match even though their absolute RGB values don't. The
- * old rule gated on absolute floors (`r>50`, `lum>40`), which scale with
- * brightness rather than hue, so it silently doubled as a brightness gate
- * that penalized darker skin. The luminance check here is only a loose sanity
- * bound (reject true sensor black/white clipping), not a skin-tone floor.
- *
- * The saturation check is normalized (`chroma/sum`), not absolute, for the
- * same reason: an absolute `max-min` floor shrinks toward zero as brightness
- * drops for any fixed hue, so it would silently reintroduce a brightness-
- * dependent floor at the low end (rejecting genuinely-colored dark skin as
- * "too gray" well before it's actually gray).
- */
-function isSkin(r: number, g: number, b: number, lum: number): boolean {
-  const sum = r + g + b;
-  if (sum < 20 || lum > 250) return false;
-  const nr = r / sum;
-  const ng = g / sum;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const saturation = (max - min) / sum;
-  // Range widened per Sean's feedback (2026-07-26) — real faces under warm/cool
-  // indoor lighting were still falling outside the band. Still
-  // normalized (tone-invariant), so this doesn't reintroduce a brightness bias.
-  return nr > 0.30 && nr < 0.53 && ng > 0.21 && ng < 0.47 && nr > ng && saturation > 0.01;
 }
 
 type FaceStats = {

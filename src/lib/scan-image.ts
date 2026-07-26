@@ -1,11 +1,8 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
 import { decodeJpegDataUrl, downsampleRgba } from '@/lib/native-pixels';
-import type { SkinScores } from '@/lib/scan-types';
-
-function norm(value: number, lo: number, hi: number): number {
-  return Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
-}
+import type { RawSkinMetrics } from '@/lib/scan-types';
+import { isSkin as isSkinPixel } from '@/lib/skin-classify';
 
 /** 3x3 box blur — suppresses camera sensor noise/JPEG artifacts before the
  * texture gradient is measured, so per-pixel noise doesn't dominate the signal. */
@@ -37,12 +34,13 @@ function boxBlur3(lum: Float32Array, n: number): Float32Array {
  * jpeg-js decode + manual downsample (`@/lib/native-pixels`) stands in for
  * `<canvas>`'s `drawImage`+`getImageData`.
  *
- * NOTE: this file's `isSkin` check is deliberately still the absolute-
- * luminance-floor version, same divergence from scan-calibration's
- * chrominance-based check as on web — that's a tracked, not-yet-ported
- * fairness fix, not an oversight (see scan-calibration.web.ts's file header).
+ * Skin classification uses the shared tone-invariant `isSkin` from
+ * `@/lib/skin-classify` (same one `scan-calibration.ts` uses for capture
+ * validation), so scoring and validation can't diverge on fairness again.
+ * Returns raw measurements — see `@/lib/scan-scoring` for the 0-100 mapping,
+ * which is baseline-relative rather than a fixed universal scale.
  */
-export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
+export async function measureFace(dataUrl: string): Promise<RawSkinMetrics> {
   const N = 200;
   const full = decodeJpegDataUrl(dataUrl);
   const data = downsampleRgba(full, N, N);
@@ -58,9 +56,7 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
     const b = data[i + 2];
     lum[p] = 0.299 * r + 0.587 * g + 0.114 * b;
     redn[p] = r - (g + b) / 2;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    if (r > 50 && g > 30 && b > 20 && r >= g && g >= b * 0.9 && max - min > 10 && lum[p] > 40 && lum[p] < 235) {
+    if (isSkinPixel(r, g, b, lum[p])) {
       isSkin[p] = 1;
       skinCount++;
     }
@@ -116,22 +112,12 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
   const lumStd = Math.sqrt(lumVar / count);
   const blemishFrac = blemish / count;
 
-  const redness = Math.round(100 * (1 - norm(rednessMean, 8, 55)));
-  // Same linear norm as the other three metrics (kept on the same scale so
-  // texture doesn't read artificially lower/higher than redness/blemishes/
-  // hydration for a comparable photo). Bounds are tuned for the post-blur
-  // gradient, which runs much smaller than the old pre-blur range (3-22).
-  const textureScore = Math.round(100 * (1 - norm(texture, 4, 34)));
-  const blemishes = Math.round(100 * (1 - norm(blemishFrac, 0.01, 0.25)));
-  const hydration = Math.round(100 * (1 - norm(lumStd, 16, 70)));
-  const overall = Math.round((redness + textureScore + blemishes + hydration) / 4);
-
-  return { overall, redness, texture: textureScore, blemishes, hydration };
+  return { redness: rednessMean, texture, blemishes: blemishFrac, hydration: lumStd };
 }
 
 /**
  * Re-encode a capture to a smaller JPEG for storage. No per-pixel math here,
- * so (unlike `analyzeFace`/`calibrateScan`) this goes straight through
+ * so (unlike `measureFace`/`calibrateScan`) this goes straight through
  * expo-image-manipulator's native resize+re-encode rather than the jpeg-js
  * pixel pipeline — it's the more efficient path when no pixel-level
  * correction is needed.

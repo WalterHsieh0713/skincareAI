@@ -5,6 +5,7 @@ import {
   downsampleToSquare,
   encodeRgbaToJpegDataUrl,
 } from '@/lib/native-pixels';
+import { isSkin } from '@/lib/skin-classify';
 import type {
   CalibratedScan,
   ScanMetrics,
@@ -28,6 +29,13 @@ import type {
  * lets every tap through to Capture and validates the still photo instead —
  * `camera-capture.tsx` doesn't call `assessVideoFrame` (kept only for type
  * parity below, same as it was in the pre-native-camera placeholder).
+ *
+ * The skin classifier is shared with the scorer (`scan-image.ts`) via
+ * `@/lib/skin-classify` — chrominance-based (tone-invariant), fixing a
+ * fairness bug where an absolute-luminance-floor rule made both capture
+ * validation and scoring systematically harder to pass for darker skin
+ * tones. Keep this a single import on both sides; don't reintroduce a
+ * per-file copy that can drift.
  */
 
 // --- Calibration constants (identical to scan-calibration.web.ts) ---
@@ -63,19 +71,6 @@ export const ISSUE_PRIORITY: ScanQualityIssue[] = [
   'face-too-small',
   'off-center',
 ];
-
-/** Chrominance-based skin test — ported verbatim from scan-calibration.web.ts. */
-function isSkin(r: number, g: number, b: number, lum: number): boolean {
-  const sum = r + g + b;
-  if (sum < 20 || lum > 250) return false;
-  const nr = r / sum;
-  const ng = g / sum;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const saturation = (max - min) / sum;
-  // Range widened per Sean's feedback (2026-07-26) — see scan-calibration.web.ts.
-  return nr > 0.30 && nr < 0.53 && ng > 0.21 && ng < 0.47 && nr > ng && saturation > 0.01;
-}
 
 type FaceStats = {
   count: number;

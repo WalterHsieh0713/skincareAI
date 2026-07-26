@@ -2,9 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { SkinScoreView } from '@/components/skin-score';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { GradientText } from '@/components/ui/gradient-text';
@@ -17,9 +15,6 @@ import { useTranslation } from '@/hooks/use-translation';
 import { EMPTY_PROFILE } from '@/lib/profile';
 
 type Stage = 'welcome' | 'create' | 'createEmail' | 'signin';
-
-/** Fabricated scores used purely to illustrate what a scored scan looks like. */
-const PREVIEW_SCORES = { overall: 82, redness: 74, texture: 68, blemishes: 88, hydration: 71 };
 
 /**
  * First screen a user ever sees, as a small step-by-step entry rather than
@@ -54,20 +49,12 @@ export default function LoginScreen() {
   if (stage === 'welcome') {
     return (
       <Screen hideHeader>
-        <Card>
-          <View style={styles.previewHeader}>
-            <GradientText
-              colors={WordmarkGradient[scheme]}
-              direction={WordmarkGradientDirection[scheme]}
-              style={styles.wordmark}>
-              Dewpoint
-            </GradientText>
-            <ThemedView type="backgroundSelected" style={styles.streakPill}>
-              <ThemedText type="smallBold">🔥 12</ThemedText>
-            </ThemedView>
-          </View>
-          <SkinScoreView scores={PREVIEW_SCORES} />
-        </Card>
+        <GradientText
+          colors={WordmarkGradient[scheme]}
+          direction={WordmarkGradientDirection[scheme]}
+          style={styles.wordmark}>
+          Dewpoint
+        </GradientText>
 
         <View style={styles.intro}>
           <ThemedText type="subtitle" style={styles.headline}>
@@ -168,21 +155,12 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  previewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   wordmark: {
     fontFamily: FontFamily.displayBold,
     fontSize: 28,
     lineHeight: 40,
     paddingBottom: 6,
-  },
-  streakPill: {
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.five,
+    textAlign: 'center',
   },
   intro: {
     gap: Spacing.two,

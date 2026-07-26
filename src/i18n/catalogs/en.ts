@@ -65,12 +65,16 @@ export const en: Messages = {
     passedValidation:
       'Passed validation · white-balanced · exposure-normalized ({brightness}→170 luma).',
     calibrated: 'calibrated ✓',
+    calibratingHint_one: 'calibrating · {count} more scan builds your baseline',
+    calibratingHint_other: 'calibrating · {count} more scans build your baseline',
     notScored: 'not scored',
     yourScore: 'Your skin score',
     scoreDeltaUp: '+{delta} pts vs last scan',
     scoreDeltaDown: '−{delta} pts vs last scan',
     scoreDeltaEqual: 'Same as last scan',
-    scoreFirst: 'First scan — baseline set.',
+    scoreFirst: 'First scan — building your baseline.',
+    calibratingNote:
+      'Your first few scans are provisional while Dewpoint learns your personal baseline — once it’s set, every score compares against that, not a universal scale.',
     disclaimerNote:
       'Relative indicator tracked against your own baseline — not a clinical measurement.',
     savedNote: 'Saved to your progress timeline.',
@@ -406,8 +410,9 @@ export const en: Messages = {
   },
   onboardingFirstScan: {
     title: 'Let’s see where you’re starting',
-    subtitle: 'This first scan becomes your baseline — every future score compares against it.',
-    baselineTitle: 'Your baseline',
+    subtitle:
+      'This is your first scan. A couple more like it and Dewpoint learns your personal baseline — every future score compares against that, not anyone else’s.',
+    baselineTitle: 'Your first scan',
     continue: 'Continue to Dewpoint',
   },
 };

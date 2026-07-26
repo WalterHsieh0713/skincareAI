@@ -26,9 +26,9 @@ const CAPTURE_GUIDE_KEYS = ['guide1', 'guide2', 'guide3', 'guide4'] as const;
  */
 export default function OnboardingFirstScanScreen() {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, tn } = useTranslation();
   const profile = useProfile();
-  const { busy, scores, quality, capture } = useScanCapture();
+  const { busy, scores, quality, calibrating, scansUntilBaseline, capture } = useScanCapture();
 
   const worstIssue = quality
     ? ISSUE_PRIORITY.find((issue) => quality.issues.includes(issue))
@@ -78,7 +78,9 @@ export default function OnboardingFirstScanScreen() {
       ) : null}
 
       {scores && !busy ? (
-        <Card title={t('onboardingFirstScan.baselineTitle')} hint={t('scan.calibrated')}>
+        <Card
+          title={t('onboardingFirstScan.baselineTitle')}
+          hint={calibrating ? tn('scan.calibratingHint', scansUntilBaseline) : t('scan.calibrated')}>
           <SkinScoreView scores={scores} />
         </Card>
       ) : null}

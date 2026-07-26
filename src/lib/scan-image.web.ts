@@ -1,7 +1,7 @@
-import type { SkinScores } from '@/lib/scan-types';
+import type { RawSkinMetrics } from '@/lib/scan-types';
+import { isSkin as isSkinPixel } from '@/lib/skin-classify';
 
-const EMPTY: SkinScores = {
-  overall: 0,
+const EMPTY: RawSkinMetrics = {
   redness: 0,
   texture: 0,
   blemishes: 0,
@@ -15,10 +15,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = reject;
     image.src = src;
   });
-}
-
-function norm(value: number, lo: number, hi: number): number {
-  return Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
 }
 
 /** 3x3 box blur — suppresses camera sensor noise/JPEG artifacts before the
@@ -46,16 +42,20 @@ function boxBlur3(lum: Float32Array, n: number): Float32Array {
 }
 
 /**
- * Derive 0–100 skin indicators from a captured selfie by analyzing pixels:
- *  - redness:    skin red-channel excess over green/blue (lower = better score)
- *  - texture:    mean local luminance gradient / roughness (lower = better)
- *  - blemishes:  fraction of skin pixels that spike red or dark (fewer = better)
- *  - hydration:  evenness of luminance, a smoothness/plumpness proxy
+ * Derive raw skin measurements from a captured selfie by analyzing pixels:
+ *  - redness:    skin red-channel excess over green/blue (lower = better)
+ *  - texture:    mean local luminance gradient / roughness, measured on a
+ *                blurred copy so sensor noise/compression artifacts don't
+ *                dominate (lower = better)
+ *  - blemishes:  fraction of skin pixels that spike red or dark (lower = better)
+ *  - hydration:  luminance spread across skin, a smoothness/plumpness proxy (lower = better)
  *
- * These are relative, image-derived signals — not clinical measurements — meant
- * to be tracked against the user's own past scans.
+ * These are relative, image-derived signals — not clinical measurements. The
+ * 0-100 scores shown to the user are derived from these via
+ * `@/lib/scan-scoring`, which maps them against the user's own baseline
+ * rather than a fixed universal scale.
  */
-export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
+export async function measureFace(dataUrl: string): Promise<RawSkinMetrics> {
   const image = await loadImage(dataUrl);
   const N = 200;
   const canvas = document.createElement('canvas');
@@ -79,9 +79,7 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
     const b = data[i + 2];
     lum[p] = 0.299 * r + 0.587 * g + 0.114 * b;
     redn[p] = r - (g + b) / 2;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    if (r > 50 && g > 30 && b > 20 && r >= g && g >= b * 0.9 && max - min > 10 && lum[p] > 40 && lum[p] < 235) {
+    if (isSkinPixel(r, g, b, lum[p])) {
       isSkin[p] = 1;
       skinCount++;
     }
@@ -139,17 +137,7 @@ export async function analyzeFace(dataUrl: string): Promise<SkinScores> {
   const lumStd = Math.sqrt(lumVar / count);
   const blemishFrac = blemish / count;
 
-  const redness = Math.round(100 * (1 - norm(rednessMean, 8, 55)));
-  // Same linear norm as the other three metrics (kept on the same scale so
-  // texture doesn't read artificially lower/higher than redness/blemishes/
-  // hydration for a comparable photo). Bounds are tuned for the post-blur
-  // gradient, which runs much smaller than the old pre-blur range (3-22).
-  const textureScore = Math.round(100 * (1 - norm(texture, 4, 34)));
-  const blemishes = Math.round(100 * (1 - norm(blemishFrac, 0.01, 0.25)));
-  const hydration = Math.round(100 * (1 - norm(lumStd, 16, 70)));
-  const overall = Math.round((redness + textureScore + blemishes + hydration) / 4);
-
-  return { overall, redness, texture: textureScore, blemishes, hydration };
+  return { redness: rednessMean, texture, blemishes: blemishFrac, hydration: lumStd };
 }
 
 /** Re-encode a capture to a smaller JPEG for storage (and smooth playback). */

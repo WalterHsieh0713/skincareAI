@@ -12,6 +12,20 @@ export type SkinScores = {
   hydration: number;
 };
 
+/**
+ * Raw, pre-normalization per-pixel measurements behind each `SkinScores`
+ * axis (lower = better, same as their score counterparts before inversion).
+ * Stored per scan so the 0-100 mapping can be recomputed against a personal
+ * baseline (see `@/lib/scan-scoring`) instead of only the fixed global
+ * bounds used before a baseline exists.
+ */
+export type RawSkinMetrics = {
+  redness: number;
+  texture: number;
+  blemishes: number;
+  hydration: number;
+};
+
 /** One captured, scored selfie scan. */
 export type Scan = {
   id: string;
@@ -22,6 +36,8 @@ export type Scan = {
   /** (Downscaled, calibrated) JPEG data URL. */
   image: string;
   scores: SkinScores;
+  /** Raw measurements behind `scores`. Absent on scans captured before this field existed. */
+  raw?: RawSkinMetrics;
   /** The capture-quality verdict that gated this scan (valid scans only). */
   quality?: ScanQuality;
 };
