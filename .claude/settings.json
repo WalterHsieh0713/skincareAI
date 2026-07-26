@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);console.log(j.tool_input&&j.tool_input.file_path||j.tool_response&&j.tool_response.filePath||'')}catch(e){console.log('')}})\"); case \"$f\" in *dewpoint-progress-log.md) cd \"c:/Users/sean/Desktop/Claude/Dewpoint\" && git add dewpoint-progress-log.md && (git commit -m \"Update progress log\" || true) && git push origin HEAD:main ;; esac",
+            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);console.log(j.tool_input&&j.tool_input.file_path||j.tool_response&&j.tool_response.filePath||'')}catch(e){console.log('')}})\"); case \"$f\" in *dewpoint-progress-log.md) cd \"c:/Users/user/dev/skincareAI\" && git add dewpoint-progress-log.md && (git commit -m \"Update progress log\" || true) && git push origin HEAD:main ;; esac",
             "timeout": 30
           }
         ]

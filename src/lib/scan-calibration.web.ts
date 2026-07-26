@@ -31,15 +31,15 @@ const WORK = 256; // analysis resolution — fast, enough for stats
 const MAX_OUT = 1024; // cap stored/scored image so calibration stays cheap
 
 // Validation thresholds. Each maps directly to one ScanQualityIssue.
-const MIN_FACE_FILL = 0.1; // skin must cover ≥10% of frame
-const NO_FACE_FILL = 0.02; // loosened per Sean's feedback (2026-07-16): "no face detected" false-rejected real faces too often
-const MAX_CENTER_OFFSET = 0.26; // skin centroid must sit near the middle
+const MIN_FACE_FILL = 0.05; // loosened per Sean's feedback (2026-07-26): still too strict at 0.1, rejecting real captures
+const NO_FACE_FILL = 0.01; // loosened per Sean's feedback (2026-07-26): "no face detected" still false-rejecting
+const MAX_CENTER_OFFSET = 0.35; // loosened per Sean's feedback (2026-07-26): off-center was tripping on normal framing
 // SHADOW_LUM/HIGHLIGHT_LUM still feed shadowFrac/highlightFrac on ScanMetrics
 // (used by calibration's exposure gain), but no longer gate validation —
 // too-dark/too-bright were dropped as gates per product feedback (too sensitive).
 const SHADOW_LUM = 30; // below this, a pixel has no recoverable tonal detail
 const HIGHLIGHT_LUM = 210; // above this, a pixel is blown out
-const MIN_EVENNESS = 0.22; // loosened further per Sean's feedback (2026-07-16): normal indoor lighting asymmetry was still tripping "uneven lighting"
+const MIN_EVENNESS = 0.12; // loosened per Sean's feedback (2026-07-26): still tripping "uneven lighting" under normal indoor light
 
 // Normalization targets.
 const TARGET_LUMA = 170; // exposure-normalize skin toward this mean
@@ -101,10 +101,10 @@ function isSkin(r: number, g: number, b: number, lum: number): boolean {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const saturation = (max - min) / sum;
-  // Range widened per Sean's feedback (2026-07-16) — real faces under warm/cool
-  // indoor lighting were falling outside the old, tighter band. Still
+  // Range widened per Sean's feedback (2026-07-26) — real faces under warm/cool
+  // indoor lighting were still falling outside the band. Still
   // normalized (tone-invariant), so this doesn't reintroduce a brightness bias.
-  return nr > 0.33 && nr < 0.50 && ng > 0.24 && ng < 0.44 && nr > ng && saturation > 0.02;
+  return nr > 0.30 && nr < 0.53 && ng > 0.21 && ng < 0.47 && nr > ng && saturation > 0.01;
 }
 
 type FaceStats = {
